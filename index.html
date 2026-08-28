@@ -1,2030 +1,1584 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1200" />
-  <title>ARQ'TOYBOX</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=1100"/>
+<title>ARQ'TOYBOX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --p:   #f5f2e8;   /* papel */
+  --p2:  #ece9db;   /* papel oscuro */
+  --p3:  #e2dec8;   /* papel más oscuro */
+  --t:   #1a1a14;   /* tinta */
+  --t2:  #4a4a3a;   /* tinta media */
+  --t3:  #8a8a78;   /* tinta suave */
+  --az:  #1a3a5c;   /* azul plano */
+  --az2: #2a5a8c;   /* azul claro */
+  --rj:  #c0392b;   /* rojo cota */
+  --vr:  #2d6a2d;   /* verde */
+  --gr:  rgba(0,0,60,.05); /* grilla */
+  --mono: 'IBM Plex Mono', monospace;
+  --cond: 'IBM Plex Sans Condensed', sans-serif;
+}
 
-    body {
-      min-width: 1100px;
-      background: #cccccc;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 13px;
-      color: #000000;
-    }
+*{box-sizing:border-box;margin:0;padding:0;}
 
-    /* LAYOUT */
-    .wrap {
-      display: flex;
-      width: 100%;
-      min-height: 100vh;
-      align-items: stretch;
-    }
+body {
+  background: var(--p);
+  color: var(--t);
+  font-family: var(--mono);
+  font-size: 12px;
+  min-width: 960px;
+  background-image:
+    linear-gradient(var(--gr) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gr) 1px, transparent 1px),
+    linear-gradient(rgba(0,0,60,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,60,.02) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+}
 
-    .sidebar {
-      width: 180px;
-      flex-shrink: 0;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      background: #003366;
-      color: #ffffff;
-      padding: 0;
-      scrollbar-width: none;
-    }
-    .sidebar::-webkit-scrollbar { display: none; }
+/* ── HEADER ── */
+.hdr {
+  border-bottom: 2px solid var(--t);
+  padding: 18px 36px 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  background: var(--p);
+  position: sticky; top: 0; z-index: 100;
+}
+.hdr-logo { line-height: 1; }
+.hdr-eyebrow {
+  font-family: var(--cond);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-bottom: 4px;
+}
+.hdr-name {
+  font-family: var(--cond);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--az);
+  text-transform: uppercase;
+}
+.hdr-meta {
+  font-size: 10px;
+  color: var(--t3);
+  text-align: right;
+  line-height: 1.9;
+}
 
-    .sidebar-header {
-      background: #000080;
-      padding: 12px 10px;
-      border-bottom: 2px solid #ffff00;
-    }
+/* ── NAV ── */
+.nav {
+  display: flex;
+  border-bottom: 1px solid var(--t2);
+  background: var(--p2);
+  padding: 0 36px;
+  gap: 0;
+  position: sticky; top: 57px; z-index: 99;
+}
+.nav a {
+  padding: 7px 14px;
+  font-family: var(--cond);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--t2);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.nav a:hover { color: var(--az); }
+.nav a.on { color: var(--az); border-bottom-color: var(--az); }
 
-    .site-title {
-      font-family: "Times New Roman", Times, serif;
-      font-size: 22px;
-      font-weight: bold;
-      color: #ffff00;
-      line-height: 1.1;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+/* ── SECCIÓN HERRAMIENTA ── */
+.tool {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 36px 48px;
+  border-bottom: 1px solid var(--p3);
+}
+.tool:last-child { border-bottom: none; }
 
-    .site-title span { color: #ff9900; }
+.tool-hdr {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid var(--t);
+}
+.tool-num {
+  font-family: var(--cond);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .25em;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+.tool-title {
+  font-family: var(--cond);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--az);
+  flex: 1;
+}
+.tool-about {
+  font-size: 10px;
+  color: var(--t3);
+  max-width: 280px;
+  line-height: 1.6;
+  text-align: right;
+}
 
-    .header-sub {
-      font-size: 10px;
-      color: #99ccff;
-      margin-top: 6px;
-      line-height: 1.4;
-    }
+/* ── BODY 3 COLUMNAS ── */
+.cols {
+  display: grid;
+  grid-template-columns: 220px 1fr 180px;
+  border: 1px solid var(--t2);
+  min-height: 340px;
+}
+.col-in {
+  border-right: 1px solid var(--t2);
+  padding: 18px 16px;
+  background: var(--p2);
+}
+.col-out {
+  padding: 18px 22px;
+}
+.col-ref {
+  border-left: 1px solid var(--t2);
+  padding: 18px 14px;
+  background: var(--p2);
+}
+.col-lbl {
+  font-family: var(--cond);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--t3);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--t3);
+  margin-bottom: 14px;
+}
 
-    /* NAV */
-    .tabs-bar {
-      padding: 8px 0;
-    }
+/* ── INPUTS ── */
+.f { margin-bottom: 12px; }
+.f label {
+  display: block;
+  font-family: var(--cond);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t2);
+  margin-bottom: 3px;
+}
+.f input, .f select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--t2);
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--t);
+  padding: 3px 2px;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.f input::-webkit-outer-spin-button,
+.f input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.f input:focus, .f select:focus { border-bottom-color: var(--az); }
+.f .hint { font-size: 9px; color: var(--t3); margin-top: 2px; }
+.row { display: flex; gap: 6px; }
+.row input { flex:1; }
+.row select { width: 72px; flex-shrink: 0; border:none; border-bottom:1.5px solid var(--t2); background:transparent; font-family:var(--mono); font-size:12px; color:var(--t2); padding:3px 2px; outline:none; }
+.row select:focus { border-bottom-color: var(--az); }
 
-    .nav-label {
-      font-size: 9px;
-      color: #99ccff;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      padding: 8px 10px 4px;
-      border-bottom: 1px solid #336699;
-    }
+.sep { border:none; border-top:1px solid var(--p3); margin:14px 0; }
 
-    .tab-btn {
-      display: block;
-      width: 100%;
-      background: none;
-      border: none;
-      border-bottom: 1px solid #336699;
-      padding: 7px 10px;
-      font-family: Arial, sans-serif;
-      font-size: 12px;
-      color: #ccddff;
-      cursor: pointer;
-      text-align: left;
-      text-decoration: none;
-    }
-    .tab-btn::before { content: "» "; color: #6699cc; }
-    .tab-btn:hover { background: #336699; color: #ffffff; }
-    .tab-btn.active { background: #336699; color: #ffff00; font-weight: bold; }
-    .tab-btn.active::before { color: #ffff00; }
+/* PRESETS */
+.presets { display:flex; flex-wrap:wrap; gap:3px; margin-bottom:10px; }
+.pre {
+  background:none;
+  border: 1px solid var(--t3);
+  color: var(--t2);
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all .12s;
+}
+.pre:hover { border-color: var(--az); color: var(--az); }
+.pre.on { background: var(--az); border-color: var(--az); color: #fff; }
 
-    .sidebar-footer {
-      padding: 10px;
-      font-size: 10px;
-      color: #6699cc;
-      border-top: 1px solid #336699;
-      margin-top: 8px;
-    }
-    .sidebar-footer a { color: #99ccff; }
+/* MODO TABS */
+.mtabs { display:flex; gap:0; margin-bottom:12px; border:1px solid var(--t3); }
+.mtab {
+  flex:1; background:none; border:none; border-right:1px solid var(--t3);
+  font-family:var(--cond); font-size:9px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--t3); padding:5px 4px;
+  cursor:pointer; transition:all .12s; text-align:center;
+}
+.mtab:last-child { border-right:none; }
+.mtab.on { background:var(--az); color:#fff; }
+.mtab:hover:not(.on) { color:var(--t); }
+.mp { display:none; }
+.mp.on { display:block; }
 
-    /* MAIN */
-    .main-content {
-      flex: 1;
-      min-width: 0;
-      padding: 16px 24px;
-      background: #ffffff;
-      border-left: 3px solid #000080;
-      overflow-x: auto;
-    }
+/* ── OUTPUTS ── */
+.r-big {
+  margin-bottom: 18px;
+}
+.r-big-lbl { font-size:9px; color:var(--t3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:2px; }
+.r-big-val {
+  font-family: var(--cond);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--az);
+  line-height: 1;
+}
+.r-big-unit { font-family:var(--mono); font-size:14px; color:var(--t2); margin-left:4px; }
 
-    /* PAGE TITLE BAR */
-    .page-title-bar {
-      background: #000080;
-      color: #ffffff;
-      font-family: "Times New Roman", serif;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 6px 10px;
-      margin-bottom: 14px;
-      border: 2px outset #aaaaaa;
-    }
+.r-row {
+  display: flex;
+  gap: 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--p3);
+  margin-bottom: 14px;
+}
+.ri-lbl { font-size:9px; color:var(--t3); letter-spacing:.08em; text-transform:uppercase; margin-bottom:1px; }
+.ri-val { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--t); }
 
-    /* PANELS */
-    .panel { display: none; }
-    .panel.active { display: block; }
+.comp-lbl { font-size:9px; color:var(--t3); letter-spacing:.14em; text-transform:uppercase; margin-bottom:6px; }
+.comp { width:100%; border-collapse:collapse; font-family:var(--mono); font-size:10px; }
+.comp tr { border-bottom:1px solid rgba(0,0,0,.06); }
+.comp td { padding:3px 5px; color:var(--t2); }
+.comp td:first-child { color:var(--t3); }
+.comp td:last-child { text-align:right; color:var(--t); font-weight:600; }
+.comp tr.hl { background:rgba(26,58,92,.06); }
 
-    /* INICIO */
-    .tools-grid {
-      display: table;
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .tools-row { display: table-row; }
-    .tool-card {
-      display: table-cell;
-      width: 50%;
-      border: 2px solid #000080;
-      padding: 10px 12px;
-      vertical-align: top;
-      background: #eeeeff;
-      cursor: pointer;
-    }
-    .tool-card:hover { background: #ddddff; }
-    .tool-card + .tool-card { border-left: none; }
-    .tools-row + .tools-row .tool-card { border-top: none; }
+/* TABLA RESULTADOS */
+.rtab { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:10px; }
+.rtab tr { border-bottom:1px solid rgba(0,0,0,.07); }
+.rtab td { padding:4px 6px; }
+.rtab td:first-child { font-family:var(--cond); font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--t3); width:46%; }
+.rtab td:last-child { font-family:var(--mono); font-weight:600; color:var(--t); }
+.rtab tr.hl { background:rgba(26,58,92,.05); }
+.rtab tr.hl td:last-child { color:var(--az); font-size:13px; }
 
-    .tool-num { font-size: 10px; color: #666666; margin-bottom: 4px; }
-    .tool-name {
-      font-family: "Times New Roman", serif;
-      font-size: 15px;
-      font-weight: bold;
-      color: #000080;
-      margin-bottom: 5px;
-    }
-    .tool-desc { font-size: 11px; color: #333333; line-height: 1.5; }
-    .tool-link { color: #0000cc; font-size: 11px; text-decoration: underline; display: block; margin-top: 6px; }
+/* BADGES */
+.badge { font-size:9px; font-weight:600; padding:1px 6px; border:1px solid; display:inline-block; }
+.ok  { background:#e8f5e8; color:#2d6a2d; border-color:#2d6a2d; }
+.lim { background:#fef9e7; color:#7d6608; border-color:#7d6608; }
+.bad { background:#fdecea; color:#c0392b; border-color:#c0392b; }
 
-    /* SECCIÓN HR */
-    .section-hr {
-      border: none;
-      border-top: 2px solid #000080;
-      margin: 14px 0;
-    }
+/* ALTS TABLE */
+.alts { width:100%; border-collapse:collapse; font-size:10px; margin-top:10px; }
+.alts th { background:var(--az); color:#fff; font-family:var(--cond); font-size:8px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:3px 5px; text-align:left; }
+.alts td { padding:3px 5px; border-bottom:1px solid rgba(0,0,0,.06); font-family:var(--mono); }
+.alts tr:hover td { background:rgba(26,58,92,.04); }
 
-    /* CALCULADORAS */
-    .calc-wrap {
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-    }
-    .calc-wrap > .calc-block:first-child {
-      width: 320px;
-      flex-shrink: 0;
-      border-right: 1px dashed #999999;
-      padding-right: 16px;
-      background: none;
-      border-top: none;
-      border-left: none;
-      border-bottom: none;
-    }
-    .calc-wrap > .calc-block:not(:first-child) {
-      flex: 1;
-      background: none;
-      border: none;
-      padding-left: 0;
-    }
+/* ── COLUMNA REFERENCIA ── */
+.ref-block { margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(0,0,0,.08); }
+.ref-block:last-child { border:none; margin-bottom:0; padding-bottom:0; }
+.ref-ttl { font-family:var(--cond); font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.22em; color:var(--t3); margin-bottom:5px; }
+.ref-txt { font-size:10px; color:var(--t2); line-height:1.7; }
+.ref-txt b { color:var(--t); font-weight:600; }
+.formula {
+  display:block;
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--az);
+  background:rgba(26,58,92,.06);
+  border-left:2px solid var(--az);
+  padding:3px 7px;
+  margin:5px 0;
+}
 
-    .calc-block { margin-bottom: 14px; }
+/* SVG DIAGRAMA */
+.diag { margin-top:14px; }
+.diag svg { display:block; width:100%; }
 
-    .calc-title {
-      background: #000080;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: bold;
-      padding: 4px 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-    }
+/* SOLAR layout especial — no 3 cols sino header + 3 bloques horizontales */
+.sol-params {
+  border:1px solid var(--t2);
+  margin-bottom:0;
+  display:grid;
+  grid-template-columns: 110px 90px 140px 1fr 130px;
+  border-bottom: none;
+}
+.sp {
+  padding:10px 12px;
+  border-right:1px solid var(--t2);
+}
+.sp:last-child { border-right:none; }
+.sp label {
+  font-family:var(--cond); font-size:8px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--t3);
+  display:block; margin-bottom:4px;
+}
+.sp input, .sp select {
+  width:100%; background:transparent; border:none;
+  border-bottom:1.5px solid var(--t2);
+  font-family:var(--mono); font-size:13px; color:var(--t);
+  padding:2px 2px; outline:none;
+}
+.sp input[type=range] { border:none; padding:4px 0; cursor:pointer; }
+.sp input:focus, .sp select:focus { border-bottom-color:var(--az); }
+.sp .hint { font-size:9px; color:var(--t3); margin-top:2px; }
 
-    /* inputs */
-    .field { margin-bottom: 10px; }
-    .field label {
-      display: block;
-      font-size: 11px;
-      font-weight: bold;
-      color: #333333;
-      margin-bottom: 3px;
-    }
-    .field input, .field select {
-      width: 100%;
-      border: 2px inset #aaaaaa;
-      background: #ffffff;
-      color: #000000;
-      font-family: "Courier New", monospace;
-      font-size: 13px;
-      padding: 3px 5px;
-      -moz-appearance: textfield;
-    }
-    .field input::-webkit-outer-spin-button,
-    .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .field input:focus, .field select:focus { outline: 2px solid #000080; }
-    .input-group { display: flex; gap: 4px; }
-    .input-group input { flex: 1; }
-    .input-group select { width: 80px; flex-shrink: 0; }
+.sol-3 {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  border:1px solid var(--t2);
+}
+.sol-blk {
+  padding:14px;
+  border-right:1px solid var(--t2);
+}
+.sol-blk:last-child { border-right:none; }
+.sol-blk-ttl {
+  font-family:var(--cond); font-size:9px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--t3);
+  padding-bottom:8px; border-bottom:1px solid var(--p3); margin-bottom:10px;
+}
+.sol-blk .f { margin-bottom:8px; }
+.sol-blk .f label { font-size:8px; }
+.sol-blk .f input {
+  width:72px; font-size:12px;
+  border:none; border-bottom:1.5px solid var(--t2);
+  background:transparent; font-family:var(--mono); color:var(--t);
+  padding:2px; outline:none;
+}
+.sol-blk .f input:focus { border-bottom-color:var(--az); }
+.sol-mini { font-family:var(--mono); font-size:10px; color:var(--t2); margin-top:6px; line-height:1.8; }
+.sol-mini b { color:var(--t); }
 
-    /* presets */
-    .scale-presets { margin-bottom: 8px; }
-    .preset-btn {
-      background: #dddddd;
-      border: 2px outset #aaaaaa;
-      color: #000000;
-      font-size: 10px;
-      padding: 2px 6px;
-      cursor: pointer;
-      margin: 2px;
-      font-family: Arial, sans-serif;
-    }
-    .preset-btn:active { border-style: inset; }
-    .preset-btn.sel { background: #000080; color: #ffff00; border-style: inset; }
-    .preset-btn:hover:not(.sel) { background: #bbbbdd; }
+/* ACORDEÓN */
+.acc { margin-top:12px; border-top:1px solid var(--p3); }
+.acc-btn {
+  width:100%; background:none; border:none; text-align:left;
+  padding:8px 0; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:var(--cond); font-size:9px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--t3);
+}
+.acc-btn:hover { color:var(--az); }
+.acc-body {
+  display:none; padding-bottom:10px;
+  font-size:10px; color:var(--t2); line-height:1.75;
+  columns:2; column-gap:28px;
+}
+.acc-body.on { display:block; }
+.acc-body b { color:var(--t); }
+.acc-body .formula { break-inside:avoid; }
+.acc-sub { font-family:var(--cond); font-size:8px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--t3); margin:8px 0 3px; break-after:avoid; }
+.acc-body ul { padding-left:16px; margin:4px 0 8px; }
+.acc-body li { margin-bottom:2px; }
 
-    /* resultado */
-    .result-box {
-      border: 2px inset #aaaaaa;
-      background: #f0f0f0;
-      padding: 8px 10px;
-      margin-top: 6px;
-      font-family: "Courier New", monospace;
-    }
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 3px 0;
-      border-bottom: 1px dotted #999999;
-    }
-    .result-row:last-child { border-bottom: none; }
-    .result-label { font-size: 10px; color: #555555; font-family: Arial, sans-serif; }
-    .result-val { font-size: 15px; font-weight: bold; color: #000080; font-family: "Courier New", monospace; }
-    .result-val.accent { color: #cc0000; }
-    .result-val.small { font-size: 12px; }
-
-    /* badges */
-    .status-badge { font-size: 10px; font-weight: bold; padding: 1px 5px; border: 1px solid; }
-    .status-ok   { background: #ccffcc; color: #006600; border-color: #006600; }
-    .status-warn { background: #ffffcc; color: #886600; border-color: #886600; }
-    .status-bad  { background: #ffcccc; color: #cc0000; border-color: #cc0000; }
-
-    /* modos */
-    .mode-tabs { margin-bottom: 10px; }
-    .mode-btn {
-      background: #dddddd;
-      border: 2px outset #aaaaaa;
-      font-size: 10px;
-      padding: 3px 8px;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
-      margin-right: 2px;
-      color: #000000;
-    }
-    .mode-btn.active { background: #000080; color: #ffffff; border-style: inset; }
-    .mode-btn:hover:not(.active) { background: #bbbbdd; }
-    .mode-panel { display: none; }
-    .mode-panel.active { display: block; }
-
-    /* SVG */
-    .stair-svg { width: 100%; margin-top: 10px; }
-
-    /* SECCIONES */
-    .sec-form { display: none; }
-    .sec-form.active { display: block; }
-
-    /* ACORDEÓN */
-    .didactic { margin-top: 16px; border: 2px solid #000080; }
-    .didactic-header {
-      background: #ccccee;
-      border-bottom: 1px solid #000080;
-      padding: 6px 10px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
-    }
-    .didactic-header:hover { background: #bbbbdd; }
-    .didactic-header-left { display: flex; align-items: center; gap: 8px; }
-    .didactic-icon { font-weight: bold; color: #000080; font-size: 12px; }
-    .didactic-title { font-size: 11px; font-weight: bold; color: #000066; text-transform: uppercase; letter-spacing: 1px; }
-    .didactic-arrow { color: #000080; font-size: 11px; }
-    .didactic.open .didactic-arrow { transform: rotate(180deg); display: inline-block; }
-
-    .didactic-body {
-      display: none;
-      padding: 12px 14px;
-      background: #f8f8ff;
-      font-size: 12px;
-      line-height: 1.7;
-      color: #222222;
-    }
-    .didactic.open .didactic-body { display: block; }
-    .didactic-body p { margin-bottom: 10px; }
-    .didactic-body p:last-child { margin-bottom: 0; }
-    .didactic-body strong { color: #000080; }
-    .didactic-body em { color: #cc0000; font-style: normal; font-weight: bold; }
-
-    .didactic-body .formula {
-      display: block;
-      background: #eeeeff;
-      border-left: 3px solid #000080;
-      padding: 6px 10px;
-      margin: 8px 0;
-      font-family: "Courier New", monospace;
-      font-size: 12px;
-      color: #000000;
-    }
-
-    .didactic-body ul { list-style: disc; padding-left: 18px; margin: 6px 0 10px; }
-    .didactic-body ul li { margin-bottom: 3px; font-size: 12px; }
-    .didactic-body ul li strong { color: #000080; }
-
-    .didactic-section-title {
-      font-size: 10px;
-      font-weight: bold;
-      color: #000080;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin: 12px 0 5px;
-      border-bottom: 1px solid #ccccee;
-      padding-bottom: 2px;
-    }
-    .didactic-section-title:first-child { margin-top: 0; }
-  </style>
+/* INICIO */
+.grid-inicio {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+  background:var(--t2); border:1px solid var(--t2);
+}
+.card {
+  background:var(--p);
+  padding:18px 18px 14px;
+  cursor:pointer;
+  transition:background .12s;
+}
+.card:hover { background:var(--p2); }
+.card-n { font-size:9px; color:var(--t3); letter-spacing:.2em; margin-bottom:8px; }
+.card-t { font-family:var(--cond); font-size:15px; font-weight:700; text-transform:uppercase; color:var(--az); margin-bottom:5px; }
+.card-d { font-size:10px; color:var(--t2); line-height:1.55; }
+.card-go { font-size:9px; color:var(--az2); text-decoration:underline; margin-top:8px; display:block; }
+</style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="site-title">ARQ'<span>TOY<br>BOX</span></div>
-      <p class="header-sub">Lucas · FADU UDELAR<br>calculadoras de arquitectura</p>
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-eyebrow">Herramientas de arquitectura</div>
+    <div class="hdr-name">ARQ'TOYBOX</div>
+  </div>
+  <div class="hdr-meta">
+    Lucas · FADU UDELAR<br>
+    <span id="hdr-date" style="color:var(--t3);font-size:9px;"></span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#inicio" class="on">Inicio</a>
+  <a href="#escalas">Escalas</a>
+  <a href="#escaleras">Escaleras</a>
+  <a href="#unidades">Unidades</a>
+  <a href="#secciones">Secciones</a>
+  <a href="#solar">Solar</a>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     INICIO
+══════════════════════════════════════════ -->
+<section class="tool" id="inicio">
+  <div class="tool-hdr">
+    <span class="tool-num">ARQ' /</span>
+    <span class="tool-title">Toybox</span>
+    <span class="tool-about">Calculadoras para dibujo técnico, diseño y estructuras. En construcción permanente.</span>
+  </div>
+  <div class="grid-inicio">
+    <div class="card" onclick="goTo('escalas')">
+      <div class="card-n">001</div>
+      <div class="card-t">Escalas</div>
+      <div class="card-d">Real a papel y viceversa. Escalas predefinidas o libres. Tabla comparativa automática.</div>
+      <span class="card-go">→ abrir</span>
     </div>
-
-    <nav class="tabs-bar">
-      <div class="nav-label">herramientas</div>
-      <button class="tab-btn active" data-tab="inicio">Inicio</button>
-      <button class="tab-btn" data-tab="escalas">Escalas</button>
-      <button class="tab-btn" data-tab="escaleras">Escaleras</button>
-      <button class="tab-btn" data-tab="unidades">Unidades</button>
-      <button class="tab-btn" data-tab="secciones">Secciones</button>
-      <button class="tab-btn" data-tab="solar">Solar</button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <a href="https://github.com" target="_blank">ver en GitHub</a><br>
-      <span id="footerDate"></span>
+    <div class="card" onclick="goTo('escaleras')">
+      <div class="card-n">002</div>
+      <div class="card-t">Escaleras</div>
+      <div class="card-d">Contrahuella, huella, Blondel, pendiente, ángulo. Sección y planta generadas a escala.</div>
+      <span class="card-go">→ abrir</span>
     </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main-content">
-  <section class="panel active" id="panel-inicio">
-    <div class="page-title-bar">ARQ'TOYBOX — Herramientas de Arquitectura</div>
-    <p style="font-size:12px; margin-bottom:10px; color:#333;">
-      Calculadoras para dibujo técnico, diseño y estructuras. Hecho en FADU UDELAR.<br>
-      <strong>Seleccioná una herramienta del menú o hacé clic en una tarjeta.</strong>
-    </p>
-    <hr class="section-hr">
-    <div class="tools-grid">
-      <div class="tools-row">
-        <div class="tool-card" onclick="switchTab('escalas')">
-          <div class="tool-num">[001]</div>
-          <div class="tool-name">Calculadora de Escalas</div>
-          <div class="tool-desc">Convertí medidas reales a papel y viceversa. Escalas predefinidas o libres. Tabla comparativa automática.</div>
-          <span class="tool-link">→ abrir herramienta</span>
-        </div>
-        <div class="tool-card" onclick="switchTab('escaleras')">
-          <div class="tool-num">[002]</div>
-          <div class="tool-name">Calculadora de Escaleras</div>
-          <div class="tool-desc">Calculá contrahuella, huella, Blondel, pendiente y ángulo. Tres modos. Diagrama de sección automático.</div>
-          <span class="tool-link">→ abrir herramienta</span>
-        </div>
-      </div>
-      <div class="tools-row">
-        <div class="tool-card" onclick="switchTab('unidades')">
-          <div class="tool-num">[003]</div>
-          <div class="tool-name">Conversor de Unidades</div>
-          <div class="tool-desc">Longitud, superficie y volumen. Métrico, imperial y vara uruguaya. Todas las equivalencias al instante.</div>
-          <span class="tool-link">→ abrir herramienta</span>
-        </div>
-        <div class="tool-card" onclick="switchTab('secciones')">
-          <div class="tool-num">[004]</div>
-          <div class="tool-name">Propiedades de Secciones</div>
-          <div class="tool-desc">Baricentro, inercia, módulo resistente y radio de giro. Rect., circular, doble T, L y T. Diagrama a escala.</div>
-          <span class="tool-link">→ abrir herramienta</span>
-        </div>
-      </div>
-      <div class="tools-row">
-        <div class="tool-card" onclick="switchTab('solar')">
-          <div class="tool-num">[005]</div>
-          <div class="tool-name">Ángulo Solar</div>
-          <div class="tool-desc">Posición solar, sombras y protección solar. Voladizo y parasoles. Diagrama de trayectoria solar.</div>
-          <span class="tool-link">→ abrir herramienta</span>
-        </div>
-        <div class="tool-card" style="background:#f8f8f8; cursor:default;">
-          <div class="tool-num" style="color:#aaa;">[---]</div>
-          <div class="tool-name" style="color:#aaa;">Próximamente</div>
-          <div class="tool-desc" style="color:#aaa;">Nueva herramienta en desarrollo.</div>
-        </div>
-      </div>
+    <div class="card" onclick="goTo('unidades')">
+      <div class="card-n">003</div>
+      <div class="card-t">Unidades</div>
+      <div class="card-d">Longitud, superficie y volumen. Métrico, imperial y vara uruguaya.</div>
+      <span class="card-go">→ abrir</span>
     </div>
-  </section>
-
-  <!-- ══ ESCALAS ══ -->
-  <section class="panel" id="panel-escalas">
-    <div class="page-title-bar">Calculadora de Escalas</div>
-    <div class="calc-wrap">
-
-      <div class="calc-block">
-        <div class="calc-title">Parámetros</div>
-        <div class="field">
-          <label>Escala</label>
-          <div class="scale-presets" id="scalePresets">
-            <button class="preset-btn" data-v="5">1:5</button>
-            <button class="preset-btn" data-v="10">1:10</button>
-            <button class="preset-btn" data-v="20">1:20</button>
-            <button class="preset-btn" data-v="25">1:25</button>
-            <button class="preset-btn" data-v="50">1:50</button>
-            <button class="preset-btn" data-v="75">1:75</button>
-            <button class="preset-btn" data-v="100">1:100</button>
-            <button class="preset-btn" data-v="200">1:200</button>
-            <button class="preset-btn" data-v="500">1:500</button>
-            <button class="preset-btn" data-v="1000">1:1000</button>
-          </div>
-          <div class="input-group">
-            <span style="font-size:14px;color:var(--dim);padding:9px 10px 9px 0;white-space:nowrap;">1 :</span>
-            <input type="number" id="scaleVal" min="1" placeholder="200" value="200" />
-          </div>
-        </div>
-        <div class="field">
-          <label>Medida real</label>
-          <div class="input-group">
-            <input type="number" id="realVal" min="0" step="any" placeholder="0" />
-            <select id="realUnit">
-              <option value="mm">mm</option>
-              <option value="cm">cm</option>
-              <option value="m" selected>m</option>
-            </select>
-          </div>
-        </div>
-        <div style="margin:4px 0 16px;font-size:9px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;">
-          ↕ o ingresá una medida de papel →
-        </div>
-        <div class="field">
-          <label>Medida en papel (inverso)</label>
-          <div class="input-group">
-            <input type="number" id="paperVal" min="0" step="any" placeholder="0" />
-            <select id="paperUnit">
-              <option value="mm" selected>mm</option>
-              <option value="cm">cm</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="calc-block">
-        <div class="calc-title">Resultado</div>
-        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;" id="scaleLabel">Escala 1:200</div>
-        <div class="result-box">
-          <div class="result-row">
-            <span class="result-label">En papel</span>
-            <span class="result-val accent" id="r-mm">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">En papel (cm)</span>
-            <span class="result-val small" id="r-cm">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">Medida real</span>
-            <span class="result-val small" id="r-real">—</span>
-          </div>
-        </div>
-        <div style="margin-top:20px;">
-          <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;">Misma medida en otras escalas</div>
-          <div id="scaleTable" style="font-size:11px;color:var(--dim);"></div>
-        </div>
-      </div>
+    <div class="card" onclick="goTo('secciones')">
+      <div class="card-n">004</div>
+      <div class="card-t">Secciones</div>
+      <div class="card-d">Baricentro, inercia, módulo resistente, radio de giro. Rect., circular, doble T, L y T.</div>
+      <span class="card-go">→ abrir</span>
     </div>
-
-    <!-- ACORDEÓN: qué es la escala -->
-    <div class="didactic" id="acc-escalas">
-      <div class="didactic-header" onclick="toggleAcc('acc-escalas')">
-        <div class="didactic-header-left">
-          <span class="didactic-icon">?</span>
-          <span class="didactic-title">¿Qué es la escala y cómo se usa?</span>
-        </div>
-        <span class="didactic-arrow">▾</span>
-      </div>
-      <div class="didactic-body">
-        <div class="didactic-section-title">Concepto</div>
-        <p>La <strong>escala</strong> es la relación de proporción entre las dimensiones de un dibujo y las dimensiones reales del objeto representado. Se expresa como una razón <em>1:N</em>, donde N indica cuántas veces más grande es la realidad respecto al papel.</p>
-        <p>Una escala <strong>1:100</strong> significa que 1 cm en el dibujo equivale a 100 cm (1 m) en la realidad. Una escala <strong>1:1</strong> sería tamaño natural.</p>
-
-        <div class="didactic-section-title">Fórmulas</div>
-        <span class="formula">medida en papel = medida real ÷ N</span>
-        <span class="formula">medida real = medida en papel × N</span>
-
-        <div class="didactic-section-title">Escalas según uso típico</div>
-        <ul>
-          <li><strong>1:1 — 1:5</strong> detalles constructivos, piezas, herrajes</li>
-          <li><strong>1:10 — 1:20</strong> detalles de carpintería, secciones de muros</li>
-          <li><strong>1:50</strong> planos de arquitectura estándar (plantas, cortes, fachadas)</li>
-          <li><strong>1:100</strong> plantas generales, proyectos completos</li>
-          <li><strong>1:200 — 1:500</strong> implantación, sitio, contexto urbano</li>
-          <li><strong>1:1000 y más</strong> planimetría urbana, cartografía</li>
-        </ul>
-
-        <div class="didactic-section-title">Para maquetas</div>
-        <p>Las escalas más usadas en maquetas son <strong>1:50, 1:100 y 1:200</strong>. A 1:50 una pared de 3 m de altura mide 6 cm en la maqueta. Es la escala donde el detalle de aberturas y espesores de muros empieza a ser legible.</p>
-
-        <div class="didactic-section-title">Tip</div>
-        <p>La tabla comparativa que genera la calculadora sirve para decidir qué escala usar según el tamaño de papel disponible: si a 1:100 el dibujo entra en A3 pero a 1:50 no, tenés el dato directo.</p>
-      </div>
+    <div class="card" onclick="goTo('solar')">
+      <div class="card-n">005</div>
+      <div class="card-t">Solar</div>
+      <div class="card-d">Posición solar, sombras y protección. Trayectoria, aleros, brise-soleil.</div>
+      <span class="card-go">→ abrir</span>
     </div>
-  </section>
-
-  <!-- ══ ESCALERAS ══ -->
-  <section class="panel" id="panel-escaleras">
-    <div class="page-title-bar">Calculadora de Escaleras</div>
-
-    <!-- PARÁMETROS EN UNA SOLA FILA -->
-    <table style="border-collapse:collapse; width:100%; margin-bottom:10px; border:2px solid #000080;">
-      <tr style="background:#000080; color:#fff;">
-        <th colspan="6" style="padding:4px 8px; font-size:11px; text-align:left; letter-spacing:1px;">PARÁMETROS — completá los que sabés, el resto se calcula</th>
-      </tr>
-      <tr style="background:#eeeeff;">
-        <td style="padding:6px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold; white-space:nowrap;">Altura total H</td>
-        <td style="padding:6px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold; white-space:nowrap;">Desarrollo D</td>
-        <td style="padding:6px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold; white-space:nowrap;">N° escalones</td>
-        <td style="padding:6px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold; white-space:nowrap;">Contrahuella ch</td>
-        <td style="padding:6px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold; white-space:nowrap;">Huella h</td>
-        <td style="padding:6px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold; white-space:nowrap;">Blondel target</td>
-      </tr>
-      <tr>
-        <td style="padding:4px 6px; border:1px solid #ccc;">
-          <input type="number" id="st-H" class="stair-inp" step="1" min="1" placeholder="ej: 270"
-            style="width:100%; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:13px; padding:3px 5px;" />
-          <div style="font-size:9px;color:#666;margin-top:2px;">cm</div>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc;">
-          <input type="number" id="st-D" class="stair-inp" step="1" min="1" placeholder="ej: 390"
-            style="width:100%; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:13px; padding:3px 5px;" />
-          <div style="font-size:9px;color:#666;margin-top:2px;">cm (opcional)</div>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc;">
-          <input type="number" id="st-N" class="stair-inp" step="1" min="1" placeholder="ej: 15"
-            style="width:100%; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:13px; padding:3px 5px;" />
-          <div style="font-size:9px;color:#666;margin-top:2px;">escalones</div>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc;">
-          <input type="number" id="st-cp" class="stair-inp" step="0.5" min="1" placeholder="ej: 17"
-            style="width:100%; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:13px; padding:3px 5px;" />
-          <div style="font-size:9px;color:#666;margin-top:2px;">cm (opcional)</div>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc;">
-          <input type="number" id="st-h" class="stair-inp" step="0.5" min="1" placeholder="ej: 29"
-            style="width:100%; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:13px; padding:3px 5px;" />
-          <div style="font-size:9px;color:#666;margin-top:2px;">cm (opcional)</div>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc;">
-          <input type="number" id="st-B" class="stair-inp" step="0.5" min="55" max="70" placeholder="63"
-            style="width:100%; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:13px; padding:3px 5px;" />
-          <div style="font-size:9px;color:#666;margin-top:2px;">cm (default 63)</div>
-        </td>
-      </tr>
-    </table>
-
-    <!-- RESULTADO + DIBUJO LADO A LADO -->
-    <div style="display:flex; gap:16px; align-items:flex-start;">
-
-      <!-- Resultados numéricos -->
-      <div style="min-width:260px; flex-shrink:0;">
-        <div class="calc-title">Resultado</div>
-        <div id="stairResult" style="font-size:11px; color:#666;">Ingresá la altura para calcular.</div>
-      </div>
-
-      <!-- Dibujo -->
-      <div style="flex:1; border-left:1px dashed #999; padding-left:16px;">
-        <div class="calc-title">Sección &amp; planta</div>
-        <div id="stairDrawing"></div>
-      </div>
-
+    <div class="card" style="cursor:default;opacity:.4;">
+      <div class="card-n">···</div>
+      <div class="card-t" style="color:var(--t3);">Próximamente</div>
+      <div class="card-d">Nueva herramienta en desarrollo.</div>
     </div>
+  </div>
+</section>
 
-    <!-- ACORDEÓN -->
-    <div class="didactic" id="acc-escaleras">
-      <div class="didactic-header" onclick="toggleAcc('acc-escaleras')">
-        <div class="didactic-header-left">
-          <span class="didactic-icon">?</span>
-          <span class="didactic-title">Contrahuella, huella, Blondel y pendiente — ¿qué es cada cosa?</span>
-        </div>
-        <span class="didactic-arrow">▾</span>
+<!-- ══════════════════════════════════════════
+     001 ESCALAS
+══════════════════════════════════════════ -->
+<section class="tool" id="escalas">
+  <div class="tool-hdr">
+    <span class="tool-num">001 /</span>
+    <span class="tool-title">Calculadora de Escalas</span>
+    <span class="tool-about">Medida real a papel y viceversa. Ingresá desde cualquiera de los dos lados.</span>
+  </div>
+  <div class="cols">
+    <div class="col-in">
+      <div class="col-lbl">Parámetros</div>
+      <div class="f">
+        <label>Escala 1 :</label>
+        <input type="number" id="sc-N" value="100" min="1" oninput="scCalc();scHL(this.value)"/>
       </div>
-      <div class="didactic-body">
-        <div class="didactic-section-title">Partes de un escalón</div>
-        <p><strong>Contrahuella (ch)</strong> es la dimensión vertical del escalón (alzada/tabica). Interior cómodo: entre <em>16 y 18 cm</em>.</p>
-        <p><strong>Huella (h)</strong> es la superficie horizontal donde apoya el pie. No menor a <em>25 cm</em>; ideal 28–32 cm.</p>
-        <div class="didactic-section-title">Regla de Blondel</div>
-        <p>Relaciona cp y h con el paso humano promedio (~63 cm):</p>
-        <span class="formula">2ch + h = 63 cm &nbsp;(rango cómodo: 60 – 65 cm)</span>
-        <div class="didactic-section-title">Desarrollo vs. proyección horizontal</div>
-        <p>El <strong>desarrollo</strong> es el espacio disponible en planta. La escalera ocupa <strong>(N−1) × h</strong> — el último escalón llega al nivel de piso y no suma huella en planta.</p>
-        <div class="didactic-section-title">Referencia rápida</div>
-        <ul>
-          <li><strong>Residencial cómoda:</strong> ch 17 · h 29 · B 63</li>
-          <li><strong>Mínima reglamentaria:</strong> ch 18 · h 25 · B 61</li>
-          <li><strong>Exterior:</strong> ch 14 · h 35 · B 63</li>
-          <li><strong>Servicio:</strong> ch 20 · h 22 · B 62</li>
-        </ul>
+      <div class="presets">
+        <button class="pre" onclick="scSet(5)">1:5</button>
+        <button class="pre" onclick="scSet(10)">1:10</button>
+        <button class="pre" onclick="scSet(20)">1:20</button>
+        <button class="pre" onclick="scSet(25)">1:25</button>
+        <button class="pre" onclick="scSet(50)">1:50</button>
+        <button class="pre on" onclick="scSet(100)">1:100</button>
+        <button class="pre" onclick="scSet(200)">1:200</button>
+        <button class="pre" onclick="scSet(500)">1:500</button>
+        <button class="pre" onclick="scSet(1000)">1:1000</button>
       </div>
-    </div>
-  </section>
-
-
-  <section class="panel" id="panel-unidades">
-    <div class="page-title-bar">Conversor de Unidades</div>
-
-    <!-- CATEGORÍAS -->
-    <div class="mode-tabs" id="unitCatTabs" style="max-width:400px; margin-bottom:28px;">
-      <button class="mode-btn active" data-cat="longitud">Longitud</button>
-      <button class="mode-btn" data-cat="superficie">Superficie</button>
-      <button class="mode-btn" data-cat="volumen">Volumen</button>
-    </div>
-
-    <div class="calc-wrap">
-      <div class="calc-block">
-        <div class="calc-title">Valor de entrada</div>
-        <div class="field">
-          <label id="unitInputLabel">Cantidad</label>
-          <div class="input-group">
-            <input type="number" id="unitVal" min="0" step="any" placeholder="0" />
-            <select id="unitFrom" style="width:110px;"></select>
-          </div>
-        </div>
-      </div>
-
-      <div class="calc-block">
-        <div class="calc-title">Equivalencias</div>
-        <div id="unitResult" style="color:var(--dim);font-size:11px;">Ingresá un valor para convertir.</div>
-      </div>
-    </div>
-
-    <!-- ACORDEÓN -->
-    <div class="didactic" id="acc-unidades">
-      <div class="didactic-header" onclick="toggleAcc('acc-unidades')">
-        <div class="didactic-header-left">
-          <span class="didactic-icon">?</span>
-          <span class="didactic-title">¿Por qué hay tantas unidades? — sistemas de medida</span>
-        </div>
-        <span class="didactic-arrow">▾</span>
-      </div>
-      <div class="didactic-body">
-        <div class="didactic-section-title">Sistema Internacional (SI)</div>
-        <p>El <strong>Sistema Internacional</strong> es el estándar científico y técnico global. Para arquitectura, las unidades base son el <em>metro (m)</em> y sus derivados: kilómetro, centímetro, milímetro. En planos de arquitectura se trabaja casi siempre en metros o centímetros; los detalles constructivos suelen ir en milímetros.</p>
-
-        <div class="didactic-section-title">Sistema imperial</div>
-        <p>Usado principalmente en Estados Unidos y en parte del mundo anglosajón. Las unidades clave son el <strong>pie (ft)</strong> y la <strong>pulgada (in)</strong>. 1 pie = 12 pulgadas = 30,48 cm. Muchos materiales de construcción importados (tubería, perfiles metálicos, plywood) se siguen comercializando en pulgadas incluso en países métricos.</p>
-        <span class="formula">1 pie = 30.48 cm &nbsp;|&nbsp; 1 pulgada = 2.54 cm</span>
-
-        <div class="didactic-section-title">Vara</div>
-        <p>Unidad tradicional iberoamericana. Su valor varía según el país: en Uruguay la <strong>vara castellana</strong> equivale a <em>0.836 m</em>. Aparece en planos históricos, escrituras antiguas y mensuras catastrales. Saber convertirla es útil al trabajar con documentación de edificios del siglo XIX o principios del XX.</p>
-        <span class="formula">1 vara (UY) ≈ 0.836 m</span>
-
-        <div class="didactic-section-title">Superficie</div>
-        <p>La unidad SI es el <strong>metro cuadrado (m²)</strong>. En agrimensura y bienes raíces aparecen la <strong>hectárea (ha)</strong> = 10 000 m² y el <strong>acre</strong> (sistema imperial) = 4 046,86 m². El <strong>pie cuadrado (ft²)</strong> es la unidad de superficie más usada en el mercado inmobiliario anglosajón; 1 ft² = 0,0929 m².</p>
-
-        <div class="didactic-section-title">Volumen</div>
-        <p>El <strong>metro cúbico (m³)</strong> es la unidad base. Se usa para cómputos de excavación, hormigón, relleno y áridos. El <strong>litro</strong> es 1/1000 de m³ y se usa para instalaciones (cisternas, tanques). El <strong>pie cúbico (ft³)</strong> aparece en especificaciones de equipamiento HVAC importado; 1 ft³ ≈ 28,32 litros.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ SECCIONES ══ -->
-  <section class="panel" id="panel-secciones">
-    <div class="page-title-bar">Propiedades de Secciones</div>
-
-    <div class="mode-tabs" id="secTypeTabs" style="margin-bottom:24px;">
-      <button class="mode-btn active" data-sec="rect">Rect.</button>
-      <button class="mode-btn" data-sec="circ">Circ.</button>
-      <button class="mode-btn" data-sec="I">Doble T</button>
-      <button class="mode-btn" data-sec="L">L</button>
-      <button class="mode-btn" data-sec="T">T</button>
-    </div>
-
-    <div class="calc-wrap">
-
-      <!-- INPUTS -->
-      <div class="calc-block">
-        <div class="calc-title">Dimensiones <span style="font-size:9px;color:var(--dim)">(cm)</span></div>
-
-        <!-- RECT -->
-        <div class="sec-form active" id="sec-form-rect">
-          <div class="field"><label>Base b</label><input class="sec-input" type="number" id="rect-b" min="0" step="any" placeholder="10"/></div>
-          <div class="field"><label>Altura h</label><input class="sec-input" type="number" id="rect-h" min="0" step="any" placeholder="20"/></div>
-        </div>
-
-        <!-- CIRC -->
-        <div class="sec-form" id="sec-form-circ">
-          <div class="field"><label>Diámetro exterior d</label><input class="sec-input" type="number" id="circ-d" min="0" step="any" placeholder="20"/></div>
-          <div class="field"><label>Diámetro interior dᵢ (0 = maciza)</label><input class="sec-input" type="number" id="circ-di" min="0" step="any" placeholder="0"/></div>
-        </div>
-
-        <!-- I -->
-        <div class="sec-form" id="sec-form-I">
-          <div class="field"><label>Ancho de alas bf</label><input class="sec-input" type="number" id="I-bf" min="0" step="any" placeholder="15"/></div>
-          <div class="field"><label>Espesor de alas tf</label><input class="sec-input" type="number" id="I-tf" min="0" step="any" placeholder="2"/></div>
-          <div class="field"><label>Altura alma hw</label><input class="sec-input" type="number" id="I-hw" min="0" step="any" placeholder="20"/></div>
-          <div class="field"><label>Espesor alma tw</label><input class="sec-input" type="number" id="I-tw" min="0" step="any" placeholder="1.5"/></div>
-        </div>
-
-        <!-- L -->
-        <div class="sec-form" id="sec-form-L">
-          <div class="field"><label>Ancho b</label><input class="sec-input" type="number" id="L-b" min="0" step="any" placeholder="10"/></div>
-          <div class="field"><label>Altura h</label><input class="sec-input" type="number" id="L-h" min="0" step="any" placeholder="15"/></div>
-          <div class="field"><label>Espesor t</label><input class="sec-input" type="number" id="L-t" min="0" step="any" placeholder="1.5"/></div>
-        </div>
-
-        <!-- T -->
-        <div class="sec-form" id="sec-form-T">
-          <div class="field"><label>Ancho de ala bf</label><input class="sec-input" type="number" id="T-bf" min="0" step="any" placeholder="15"/></div>
-          <div class="field"><label>Espesor de ala tf</label><input class="sec-input" type="number" id="T-tf" min="0" step="any" placeholder="2"/></div>
-          <div class="field"><label>Altura alma hw</label><input class="sec-input" type="number" id="T-hw" min="0" step="any" placeholder="20"/></div>
-          <div class="field"><label>Espesor alma tw</label><input class="sec-input" type="number" id="T-tw" min="0" step="any" placeholder="1.5"/></div>
-        </div>
-      </div>
-
-      <!-- RESULTADO + DIAGRAMA -->
-      <div class="calc-block">
-        <div class="calc-title">Propiedades</div>
-        <div id="secResult" style="color:var(--dim);font-size:11px;">Ingresá las dimensiones para calcular.</div>
-        <div id="secDiagram"></div>
-        <div style="margin-top:12px;font-size:9px;color:var(--dim);letter-spacing:.08em;">
-          ✕ = baricentro &nbsp;|&nbsp; <span style="color:var(--warn)">—</span> ejes centroidales
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ACORDEÓN -->
-    <div class="didactic" id="acc-secciones">
-      <div class="didactic-header" onclick="toggleAcc('acc-secciones')">
-        <div class="didactic-header-left">
-          <span class="didactic-icon">?</span>
-          <span class="didactic-title">Baricentro, inercia, módulo resistente y radio de giro — ¿qué es cada cosa?</span>
-        </div>
-        <span class="didactic-arrow">▾</span>
-      </div>
-      <div class="didactic-body">
-
-        <div class="didactic-section-title">Baricentro (centro de gravedad geométrico)</div>
-        <p>El <strong>baricentro</strong> es el punto donde se concentra geométricamente la sección. Para secciones simétricas coincide con el centro; para secciones asimétricas (L, T no simétrica) hay que calcularlo por suma ponderada de subáreas.</p>
-        <span class="formula">ȳ = Σ(Aᵢ · yᵢ) ÷ Σ Aᵢ</span>
-        <p>Es el punto desde donde se miden las distancias para calcular inercia y módulo resistente. En vigas, el baricentro define el <em>eje neutro</em>: la fibra que no se deforma en flexión.</p>
-
-        <div class="didactic-section-title">Momento de inercia (I)</div>
-        <p>El <strong>momento de inercia</strong> mide la resistencia geométrica de la sección a la flexión. A mayor inercia, menor deformación ante una misma carga. Su unidad es cm⁴ (o mm⁴).</p>
-        <span class="formula">Ix = ∫ y² dA &nbsp;→&nbsp; para un rect.: Ix = b·h³ / 12</span>
-        <p>El <strong>teorema de Steiner</strong> permite calcular la inercia de secciones compuestas: se suma la inercia propia de cada subárea más el área multiplicada por el cuadrado de la distancia al baricentro total.</p>
-        <span class="formula">I_total = Σ (Iᵢ_propio + Aᵢ · dᵢ²)</span>
-
-        <div class="didactic-section-title">Módulo resistente (W)</div>
-        <p>El <strong>módulo resistente</strong> relaciona el momento flector con la tensión máxima en la sección. Es la inercia dividida por la distancia del baricentro a la fibra más alejada.</p>
-        <span class="formula">Wx = Ix ÷ ȳ_max &nbsp;→&nbsp; σ_max = M ÷ Wx</span>
-        <p>Su unidad es cm³. A mayor W, menor tensión ante el mismo momento. Por eso las secciones I son eficientes: alejan material del baricentro maximizando W con poco peso.</p>
-
-        <div class="didactic-section-title">Radio de giro (i)</div>
-        <p>El <strong>radio de giro</strong> es una medida de cómo está distribuida el área respecto al eje. Se usa principalmente para el cálculo de pandeo en columnas comprimidas (fórmula de Euler).</p>
-        <span class="formula">ix = √(Ix ÷ A)</span>
-        <p>A mayor radio de giro, mayor resistencia al pandeo. Una sección tubular tiene mayor radio de giro que una barra maciza de igual área, por eso los tubos son más eficientes como columnas.</p>
-
-        <div class="didactic-section-title">Ejes fuertes y débiles</div>
-        <p>En secciones rectangulares e I, el <strong>eje fuerte</strong> es aquel con mayor inercia (normalmente el horizontal, x). Siempre conviene orientar la viga de modo que el eje fuerte resista la carga principal. Una viga colocada "de canto" tiene Ix mucho mayor que colocada "de plano".</p>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ SOLAR ══ -->
-  <section class="panel" id="panel-solar">
-    <div class="page-title-bar">Ángulo Solar</div>
-
-    <!-- PARÁMETROS -->
-    <table style="border-collapse:collapse; width:100%; margin-bottom:14px; border:2px solid #000080;">
-      <tr style="background:#000080; color:#fff;">
-        <th colspan="5" style="padding:4px 8px; font-size:11px; text-align:left; letter-spacing:1px;">LUGAR Y TIEMPO</th>
-      </tr>
-      <tr style="background:#eeeeff;">
-        <td style="padding:5px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold;">Latitud</td>
-        <td style="padding:5px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold;">Hemisferio</td>
-        <td style="padding:5px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold;">Fecha</td>
-        <td style="padding:5px 8px; border:1px solid #aaa; font-size:10px; font-weight:bold;" colspan="2">
-          Hora solar &nbsp;<span id="sol-hour-label" style="font-family:'Courier New',monospace; color:#cc0000; font-weight:bold;">12:00</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:4px 6px; border:1px solid #ccc; width:110px;">
-          <input type="number" id="sol-lat" step="0.1" value="34.9" min="0" max="90"
-            style="width:100%; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:13px; padding:3px 5px;"/>
-          <div style="font-size:9px;color:#666;margin-top:2px;">° abs.</div>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc; width:90px;">
-          <select id="sol-hem" style="width:100%; border:2px inset #aaa; font-size:12px; padding:3px;">
-            <option value="-1" selected>Sur ▼</option>
-            <option value="1">Norte ▲</option>
+      <hr class="sep"/>
+      <div class="f">
+        <label>Medida real</label>
+        <div class="row">
+          <input type="number" id="sc-R" step="any" placeholder="0" oninput="document.getElementById('sc-P').value='';scCalc()"/>
+          <select id="sc-RU" onchange="scCalc()">
+            <option value="mm">mm</option>
+            <option value="cm">cm</option>
+            <option value="m" selected>m</option>
           </select>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc; width:150px;">
-          <input type="date" id="sol-date"
-            style="width:100%; border:2px inset #aaa; font-size:12px; padding:3px 5px;"/>
-        </td>
-        <td style="padding:4px 6px; border:1px solid #ccc;">
-          <input type="range" id="sol-hour" min="5" max="19" step="0.25" value="12"
-            style="width:100%; margin:4px 0;"/>
-          <div style="display:flex; justify-content:space-between; font-size:9px; color:#666;">
-            <span>5:00</span><span>12:00</span><span>19:00</span>
-          </div>
-        </td>
-        <td style="padding:4px 10px; border:1px solid #ccc; font-size:10px; color:#555; min-width:110px;" id="sol-sr">—</td>
-      </tr>
-    </table>
-
-    <!-- TRES BLOQUES EN PARALELO -->
-    <table style="border-collapse:collapse; width:100%; table-layout:fixed;">
-      <tr style="background:#000080; color:#fff; font-size:10px; font-weight:bold; letter-spacing:1px;">
-        <td style="padding:4px 10px; border:1px solid #336699; width:38%;">① TRAYECTORIA SOLAR</td>
-        <td style="padding:4px 10px; border:1px solid #336699; width:31%;">② SOMBRAS</td>
-        <td style="padding:4px 10px; border:1px solid #336699; width:31%;">③ PROTECCIÓN SOLAR</td>
-      </tr>
-      <tr style="vertical-align:top;">
-
-        <!-- TRAYECTORIA -->
-        <td style="padding:10px; border:1px solid #ccc; background:#fafafa;">
-          <div id="sol-diagram-wrap"></div>
-          <table style="border-collapse:collapse; width:100%; margin-top:8px; font-size:10px;">
-            <tr>
-              <td style="padding:2px 5px; border:1px solid #ddd; color:#c47c10; font-weight:bold;">■ Verano</td>
-              <td style="padding:2px 5px; border:1px solid #ddd; color:#666;">— Equinoccio</td>
-              <td style="padding:2px 5px; border:1px solid #ddd; color:#000080;">■ Invierno</td>
-              <td style="padding:2px 5px; border:1px solid #ddd; color:#cc0000;">● Ahora</td>
-            </tr>
-          </table>
-          <div id="sol-pos-table" style="margin-top:6px; font-size:11px;"></div>
-        </td>
-
-        <!-- SOMBRAS -->
-        <td style="padding:10px; border:1px solid #ccc; background:#fafafa;">
-          <div style="font-size:10px; font-weight:bold; margin-bottom:6px; color:#000080;">Objeto que proyecta sombra</div>
-          <table style="border-collapse:collapse; width:100%; font-size:11px; margin-bottom:8px;">
-            <tr>
-              <td style="padding:3px 5px; border:1px solid #ddd; font-weight:bold; white-space:nowrap;">Altura objeto</td>
-              <td style="padding:3px 5px; border:1px solid #ddd;">
-                <input type="number" id="sol-obj-h" value="6" min="0.1" step="0.5"
-                  style="width:65px; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:12px; padding:2px 4px;"/> m
-              </td>
-            </tr>
-          </table>
-          <div id="sol-shadow-diagram"></div>
-          <div id="sol-shadow-result" style="font-size:11px; margin-top:6px; font-family:'Courier New',monospace;"></div>
-        </td>
-
-        <!-- VOLADIZO -->
-        <td style="padding:10px; border:1px solid #ccc; background:#fafafa;">
-          <div style="font-size:10px; font-weight:bold; margin-bottom:6px; color:#000080;">Protección de ventana</div>
-          <table style="border-collapse:collapse; width:100%; font-size:11px; margin-bottom:8px;">
-            <tr>
-              <td style="padding:3px 5px; border:1px solid #ddd; font-weight:bold; white-space:nowrap;">Altura ventana</td>
-              <td style="padding:3px 5px; border:1px solid #ddd;">
-                <input type="number" id="sol-win-h" value="1.20" min="0.1" step="0.05"
-                  style="width:65px; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:12px; padding:2px 4px;"/> m
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:3px 5px; border:1px solid #ddd; font-weight:bold; white-space:nowrap;">Voladizo actual</td>
-              <td style="padding:3px 5px; border:1px solid #ddd;">
-                <input type="number" id="sol-vol" value="0.60" min="0" step="0.05"
-                  style="width:65px; border:2px inset #aaa; font-family:'Courier New',monospace; font-size:12px; padding:2px 4px;"/> m
-              </td>
-            </tr>
-          </table>
-          <div id="sol-prot-diagram"></div>
-          <div id="sol-prot-result" style="font-size:11px; margin-top:6px;"></div>
-        </td>
-
-      </tr>
-    </table>
-
-    <!-- ACORDEÓN -->
-    <div class="didactic" id="acc-solar">
-      <div class="didactic-header" onclick="toggleAcc('acc-solar')">
-        <div class="didactic-header-left">
-          <span class="didactic-icon">?</span>
-          <span class="didactic-title">Altitud, azimut, sombras y protección solar — conceptos</span>
         </div>
-        <span class="didactic-arrow">▾</span>
       </div>
-      <div class="didactic-body">
-        <div class="didactic-section-title">Declinación y altitud solar</div>
-        <p>La <strong>declinación</strong> varía entre ±23.45° según la época del año. La <strong>altitud solar (α)</strong> es el ángulo del sol sobre el horizonte. En el hemisferio sur el sol de mediodía siempre está al norte.</p>
-        <span class="formula">sin(α) = sin(φ)·sin(δ) + cos(φ)·cos(δ)·cos(H)</span>
-        <div class="didactic-section-title">Azimut</div>
-        <p>Dirección horizontal del sol desde el norte (0°=N, 90°=E, 180°=S, 270°=O). Determina qué fachadas están expuestas en cada momento.</p>
-        <div class="didactic-section-title">Sombras</div>
-        <span class="formula">L_sombra = altura_objeto ÷ tan(α)</span>
-        <p>Con sol bajo (mañana, tarde, invierno) las sombras son largas. Fundamental para análisis de asoleamiento entre edificios.</p>
-        <div class="didactic-section-title">Voladizo y brise-soleil</div>
-        <span class="formula">voladizo_necesario = altura_ventana ÷ tan(α_verano_mediodía)</span>
-        <p>El voladizo correcto bloquea el sol en verano (ángulo alto) y lo deja pasar en invierno (ángulo bajo).</p>
+      <div style="font-size:9px;color:var(--t3);text-align:center;margin:10px 0;">— ó medida en papel —</div>
+      <div class="f">
+        <label>Medida en papel</label>
+        <div class="row">
+          <input type="number" id="sc-P" step="any" placeholder="0" oninput="document.getElementById('sc-R').value='';scCalc()"/>
+          <select id="sc-PU" onchange="scCalc()">
+            <option value="mm" selected>mm</option>
+            <option value="cm">cm</option>
+          </select>
+        </div>
       </div>
     </div>
-  </section>
 
-  </main>
+    <div class="col-out">
+      <div class="col-lbl">Resultado — escala <span id="sc-lbl" style="color:var(--az)">1:100</span></div>
+      <div class="r-big">
+        <div class="r-big-lbl">En papel</div>
+        <div><span class="r-big-val" id="sc-mm">—</span><span class="r-big-unit">mm</span></div>
+      </div>
+      <div class="r-row">
+        <div><div class="ri-lbl">En cm</div><div class="ri-val" id="sc-cm">—</div></div>
+        <div><div class="ri-lbl">Medida real</div><div class="ri-val" id="sc-real">—</div></div>
+      </div>
+      <div class="comp-lbl">Misma medida en otras escalas</div>
+      <table class="comp" id="sc-comp">
+        <tr><td colspan="3" style="color:var(--t3)">Ingresá una medida.</td></tr>
+      </table>
+    </div>
+
+    <div class="col-ref">
+      <div class="col-lbl">Referencia</div>
+      <div class="ref-block">
+        <div class="ref-ttl">Fórmulas</div>
+        <span class="formula">papel = real ÷ N</span>
+        <span class="formula">real = papel × N</span>
+      </div>
+      <div class="ref-block">
+        <div class="ref-ttl">Uso típico</div>
+        <div class="ref-txt">
+          <b>1:1–1:5</b> detalles<br>
+          <b>1:10–1:20</b> carpintería<br>
+          <b>1:50</b> plantas arq.<br>
+          <b>1:100</b> proyecto<br>
+          <b>1:200–1:500</b> sitio<br>
+          <b>1:1000+</b> urbano
+        </div>
+      </div>
+      <div class="ref-block">
+        <div class="ref-ttl">Maquetas</div>
+        <div class="ref-txt">1:50 · 1:100 · 1:200<br>A 1:50, 1m = 2cm</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="acc">
+    <button class="acc-btn" onclick="toggleAcc(this)">¿Qué es la escala? <span>▾</span></button>
+    <div class="acc-body">
+      <div>
+        <div class="acc-sub">Concepto</div>
+        La <b>escala</b> es la relación de proporción entre el dibujo y la realidad. Se expresa como 1:N — la realidad es N veces más grande que el papel. Una escala 1:100 significa que 1 cm en el dibujo equivale a 100 cm (1 m) en la realidad.
+        <div class="acc-sub">Cómo elegir</div>
+        La tabla comparativa muestra cuánto ocupa la misma medida en cada escala. Usala para decidir qué escala entra en el formato de papel disponible.
+      </div>
+      <div>
+        <div class="acc-sub">Para maquetas</div>
+        Las más comunes son 1:50, 1:100 y 1:200. A 1:50 una pared de 3m mide 6cm — la escala donde el espesor de muros y aberturas empieza a ser legible.
+        <div class="acc-sub">Tip</div>
+        Ingresá desde el papel para el inverso: si un elemento mide 23mm en el plano, sabés cuánto mide en realidad.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     002 ESCALERAS
+══════════════════════════════════════════ -->
+<section class="tool" id="escaleras">
+  <div class="tool-hdr">
+    <span class="tool-num">002 /</span>
+    <span class="tool-title">Calculadora de Escaleras</span>
+    <span class="tool-about">Completá los datos que tenés — los demás se calculan solos.</span>
+  </div>
+
+  <!-- PARÁMETROS EN TABLA -->
+  <table style="width:100%;border-collapse:collapse;border:1px solid var(--t2);margin-bottom:0;">
+    <thead>
+      <tr style="background:var(--az);color:#fff;">
+        <th style="padding:5px 10px;font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:left;border-right:1px solid var(--az2);">Altura H</th>
+        <th style="padding:5px 10px;font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:left;border-right:1px solid var(--az2);">Desarrollo D</th>
+        <th style="padding:5px 10px;font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:left;border-right:1px solid var(--az2);">N° escalones</th>
+        <th style="padding:5px 10px;font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:left;border-right:1px solid var(--az2);">Contrahuella ch</th>
+        <th style="padding:5px 10px;font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:left;border-right:1px solid var(--az2);">Huella h</th>
+        <th style="padding:5px 10px;font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;text-align:left;">Blondel</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:var(--p2);">
+        <td style="padding:6px 10px;border-right:1px solid var(--p3);">
+          <input type="number" id="st-H" class="st-in" step="1" min="1" placeholder="270"
+            style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--t2);font-family:var(--mono);font-size:14px;color:var(--t);padding:2px;outline:none;" oninput="stCalc()"/>
+          <div style="font-size:9px;color:var(--t3);margin-top:2px;">cm · obligatorio</div>
+        </td>
+        <td style="padding:6px 10px;border-right:1px solid var(--p3);">
+          <input type="number" id="st-D" class="st-in" step="1" min="1" placeholder="390"
+            style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--t2);font-family:var(--mono);font-size:14px;color:var(--t);padding:2px;outline:none;" oninput="stCalc()"/>
+          <div style="font-size:9px;color:var(--t3);margin-top:2px;">cm · opcional</div>
+        </td>
+        <td style="padding:6px 10px;border-right:1px solid var(--p3);">
+          <input type="number" id="st-N" class="st-in" step="1" min="1" placeholder="15"
+            style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--t2);font-family:var(--mono);font-size:14px;color:var(--t);padding:2px;outline:none;" oninput="stCalc()"/>
+          <div style="font-size:9px;color:var(--t3);margin-top:2px;">opcional</div>
+        </td>
+        <td style="padding:6px 10px;border-right:1px solid var(--p3);">
+          <input type="number" id="st-ch" class="st-in" step="0.5" min="1" placeholder="17"
+            style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--t2);font-family:var(--mono);font-size:14px;color:var(--t);padding:2px;outline:none;" oninput="stCalc()"/>
+          <div style="font-size:9px;color:var(--t3);margin-top:2px;">cm · opcional</div>
+        </td>
+        <td style="padding:6px 10px;border-right:1px solid var(--p3);">
+          <input type="number" id="st-h" class="st-in" step="0.5" min="1" placeholder="29"
+            style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--t2);font-family:var(--mono);font-size:14px;color:var(--t);padding:2px;outline:none;" oninput="stCalc()"/>
+          <div style="font-size:9px;color:var(--t3);margin-top:2px;">cm · opcional</div>
+        </td>
+        <td style="padding:6px 10px;">
+          <input type="number" id="st-B" class="st-in" step="0.5" min="55" max="70" placeholder="63"
+            style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--t2);font-family:var(--mono);font-size:14px;color:var(--t);padding:2px;outline:none;" oninput="stCalc()"/>
+          <div style="font-size:9px;color:var(--t3);margin-top:2px;">cm · default 63</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- RESULTADO + DIBUJO -->
+  <div style="display:grid;grid-template-columns:260px 1fr;border:1px solid var(--t2);border-top:none;">
+    <div style="padding:16px;border-right:1px solid var(--t2);background:var(--p2);">
+      <div class="col-lbl">Solución principal</div>
+      <div id="st-res"><span style="font-size:10px;color:var(--t3);">Ingresá la altura H.</span></div>
+    </div>
+    <div style="padding:16px;">
+      <div class="col-lbl">Sección & planta</div>
+      <div id="st-draw"></div>
+    </div>
+  </div>
+
+  <div class="acc">
+    <button class="acc-btn" onclick="toggleAcc(this)">Contrahuella, huella, Blondel, pendiente <span>▾</span></button>
+    <div class="acc-body">
+      <div>
+        <div class="acc-sub">Partes del escalón</div>
+        <b>Contrahuella (ch)</b> es la dimensión vertical — cuánto sube cada peldaño. Rango cómodo interior: 16–18 cm. <b>Huella (h)</b> es la superficie horizontal donde apoya el pie. No menor a 25 cm; ideal 28–32 cm.
+        <div class="acc-sub">Regla de Blondel</div>
+        Relaciona ch y h con el paso humano medio (~63 cm):
+        <span class="formula">2ch + h = 63 cm (rango: 60–65)</span>
+        Menos de 60: escalera muy tendida. Más de 65: demasiado empinada.
+      </div>
+      <div>
+        <div class="acc-sub">Desarrollo y proyección</div>
+        El <b>desarrollo D</b> es el espacio disponible en planta. La escalera ocupa <b>(N−1) × h</b> — el último escalón llega al nivel de piso sin sumar huella.
+        <div class="acc-sub">Referencia rápida</div>
+        <ul>
+          <li><b>Residencial:</b> ch 17 · h 29 · B 63</li>
+          <li><b>Mínima:</b> ch 18 · h 25 · B 61</li>
+          <li><b>Exterior:</b> ch 14 · h 35 · B 63</li>
+          <li><b>Servicio:</b> ch 20 · h 22 · B 62</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     003 UNIDADES
+══════════════════════════════════════════ -->
+<section class="tool" id="unidades">
+  <div class="tool-hdr">
+    <span class="tool-num">003 /</span>
+    <span class="tool-title">Conversor de Unidades</span>
+    <span class="tool-about">Longitud, superficie y volumen. Todas las equivalencias al instante.</span>
+  </div>
+  <div class="cols">
+    <div class="col-in">
+      <div class="col-lbl">Entrada</div>
+      <div class="mtabs" id="un-tabs">
+        <button class="mtab on" data-cat="longitud" onclick="unCat(this)">Long.</button>
+        <button class="mtab" data-cat="superficie" onclick="unCat(this)">Sup.</button>
+        <button class="mtab" data-cat="volumen" onclick="unCat(this)">Vol.</button>
+      </div>
+      <div class="f">
+        <label>Cantidad</label>
+        <input type="number" id="un-val" step="any" placeholder="0" oninput="unCalc()"/>
+      </div>
+      <div class="f">
+        <label>Unidad</label>
+        <select id="un-from" onchange="unCalc()"></select>
+      </div>
+    </div>
+    <div class="col-out">
+      <div class="col-lbl">Equivalencias</div>
+      <div id="un-res" style="font-size:10px;color:var(--t3);">Ingresá un valor.</div>
+    </div>
+    <div class="col-ref">
+      <div class="col-lbl">Referencia</div>
+      <div class="ref-block">
+        <div class="ref-ttl">Vara (UY)</div>
+        <span class="formula">1 vara ≈ 0.836 m</span>
+        <div class="ref-txt">Aparece en planos históricos, mensuras y escrituras del s. XIX–XX.</div>
+      </div>
+      <div class="ref-block">
+        <div class="ref-ttl">Imperial</div>
+        <span class="formula">1 pie = 30.48 cm</span>
+        <span class="formula">1 pulg. = 2.54 cm</span>
+        <div class="ref-txt">Común en materiales importados: perfiles, plywood, HVAC.</div>
+      </div>
+    </div>
+  </div>
+  <div class="acc">
+    <button class="acc-btn" onclick="toggleAcc(this)">Sistemas de medida <span>▾</span></button>
+    <div class="acc-body">
+      <div>
+        <div class="acc-sub">Sistema Internacional</div>
+        Base del trabajo arquitectónico. Metro y derivados. Los planos van en m o cm; los detalles en mm.
+        <div class="acc-sub">Imperial</div>
+        EE.UU. y parte del mundo anglosajón. Pie (12 pulgadas = 30.48 cm) y pulgada. Aparece en especificaciones de materiales importados.
+      </div>
+      <div>
+        <div class="acc-sub">Vara castellana</div>
+        Unidad iberoamericana de valor variable. En Uruguay ≈ 0.836 m. Clave para trabajar con documentación histórica.
+        <div class="acc-sub">Superficie y volumen</div>
+        Hectárea (10 000 m²) y acre (4 046.86 m²) en agrimensura. El m³ en hormigón y excavaciones. El litro en cisternas y tanques.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     004 SECCIONES
+══════════════════════════════════════════ -->
+<section class="tool" id="secciones">
+  <div class="tool-hdr">
+    <span class="tool-num">004 /</span>
+    <span class="tool-title">Propiedades de Secciones</span>
+    <span class="tool-about">Baricentro, inercia, módulo resistente y radio de giro. Dimensiones en cm.</span>
+  </div>
+  <div class="cols">
+    <div class="col-in">
+      <div class="col-lbl">Sección</div>
+      <div class="mtabs">
+        <button class="mtab on" data-sec="rect" onclick="secTipo(this)">Rect.</button>
+        <button class="mtab" data-sec="circ" onclick="secTipo(this)">Circ.</button>
+        <button class="mtab" data-sec="I" onclick="secTipo(this)">I</button>
+        <button class="mtab" data-sec="L" onclick="secTipo(this)">L</button>
+        <button class="mtab" data-sec="T" onclick="secTipo(this)">T</button>
+      </div>
+      <div class="mp on" id="sf-rect">
+        <div class="f"><label>Base b (cm)</label><input type="number" class="sec-in" id="r-b" step="any" placeholder="10" oninput="secCalc()"/></div>
+        <div class="f"><label>Altura h (cm)</label><input type="number" class="sec-in" id="r-h" step="any" placeholder="20" oninput="secCalc()"/></div>
+      </div>
+      <div class="mp" id="sf-circ">
+        <div class="f"><label>Diám. exterior d (cm)</label><input type="number" class="sec-in" id="c-d" step="any" placeholder="20" oninput="secCalc()"/></div>
+        <div class="f"><label>Diám. interior di (0=maciza)</label><input type="number" class="sec-in" id="c-di" step="any" placeholder="0" oninput="secCalc()"/></div>
+      </div>
+      <div class="mp" id="sf-I">
+        <div class="f"><label>Ancho alas bf (cm)</label><input type="number" class="sec-in" id="i-bf" step="any" placeholder="15" oninput="secCalc()"/></div>
+        <div class="f"><label>Espesor alas tf (cm)</label><input type="number" class="sec-in" id="i-tf" step="any" placeholder="2" oninput="secCalc()"/></div>
+        <div class="f"><label>Altura alma hw (cm)</label><input type="number" class="sec-in" id="i-hw" step="any" placeholder="20" oninput="secCalc()"/></div>
+        <div class="f"><label>Espesor alma tw (cm)</label><input type="number" class="sec-in" id="i-tw" step="any" placeholder="1.5" oninput="secCalc()"/></div>
+      </div>
+      <div class="mp" id="sf-L">
+        <div class="f"><label>Ancho b (cm)</label><input type="number" class="sec-in" id="l-b" step="any" placeholder="10" oninput="secCalc()"/></div>
+        <div class="f"><label>Altura h (cm)</label><input type="number" class="sec-in" id="l-h" step="any" placeholder="15" oninput="secCalc()"/></div>
+        <div class="f"><label>Espesor t (cm)</label><input type="number" class="sec-in" id="l-t" step="any" placeholder="1.5" oninput="secCalc()"/></div>
+      </div>
+      <div class="mp" id="sf-T">
+        <div class="f"><label>Ancho ala bf (cm)</label><input type="number" class="sec-in" id="t-bf" step="any" placeholder="15" oninput="secCalc()"/></div>
+        <div class="f"><label>Espesor ala tf (cm)</label><input type="number" class="sec-in" id="t-tf" step="any" placeholder="2" oninput="secCalc()"/></div>
+        <div class="f"><label>Altura alma hw (cm)</label><input type="number" class="sec-in" id="t-hw" step="any" placeholder="20" oninput="secCalc()"/></div>
+        <div class="f"><label>Espesor alma tw (cm)</label><input type="number" class="sec-in" id="t-tw" step="any" placeholder="1.5" oninput="secCalc()"/></div>
+      </div>
+    </div>
+    <div class="col-out">
+      <div class="col-lbl">Propiedades</div>
+      <div id="sec-res" style="font-size:10px;color:var(--t3);">Ingresá las dimensiones.</div>
+      <div id="sec-diag" class="diag"></div>
+    </div>
+    <div class="col-ref">
+      <div class="col-lbl">Referencia</div>
+      <div class="ref-block">
+        <div class="ref-ttl">Baricentro</div>
+        <span class="formula">ȳ = Σ(Aᵢ·yᵢ)/ΣAᵢ</span>
+        <div class="ref-txt">Centro geométrico. Define el eje neutro en flexión.</div>
+      </div>
+      <div class="ref-block">
+        <div class="ref-ttl">Inercia (Steiner)</div>
+        <span class="formula">I = Σ(Ii + Ai·di²)</span>
+        <div class="ref-txt">Resistencia geométrica a la flexión. Unidad: cm⁴.</div>
+      </div>
+      <div class="ref-block">
+        <div class="ref-ttl">Módulo resist.</div>
+        <span class="formula">W = I / ȳmax</span>
+        <div class="ref-txt">σ = M/W. Unidad: cm³.</div>
+      </div>
+      <div class="ref-block">
+        <div class="ref-ttl">Radio de giro</div>
+        <span class="formula">i = √(I/A)</span>
+        <div class="ref-txt">Para pandeo de columnas. Mayor i = más resistente.</div>
+      </div>
+    </div>
+  </div>
+  <div class="acc">
+    <button class="acc-btn" onclick="toggleAcc(this)">Conceptos de secciones transversales <span>▾</span></button>
+    <div class="acc-body">
+      <div>
+        <div class="acc-sub">Baricentro</div>
+        El punto donde se concentra geométricamente el área. En secciones asimétricas (L, T) hay que calcularlo por ponderación. Es donde se miden las distancias para inercia y módulo. En vigas define el <b>eje neutro</b> — la fibra que no se deforma en flexión.
+        <div class="acc-sub">Inercia</div>
+        Mide resistencia geométrica a la flexión. A mayor I, menor deformación. Las secciones doble T son eficientes porque alejan material del baricentro. El teorema de Steiner permite calcular I de secciones compuestas sumando I propio + A·d².
+      </div>
+      <div>
+        <div class="acc-sub">Módulo resistente</div>
+        W = I/ȳ_max. A mayor W, menor tensión para el mismo momento. Una viga "de canto" tiene W mucho mayor que "de plano".
+        <div class="acc-sub">Ejes fuertes y débiles</div>
+        El eje fuerte es el de mayor inercia. Siempre orientar la viga con el eje fuerte resistiendo la carga principal. Los tubos son mejores columnas que las barras macizas de igual área — mayor radio de giro.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     005 SOLAR
+══════════════════════════════════════════ -->
+<section class="tool" id="solar">
+  <div class="tool-hdr">
+    <span class="tool-num">005 /</span>
+    <span class="tool-title">Ángulo Solar</span>
+    <span class="tool-about">Posición solar, sombras y protección de ventanas.</span>
+  </div>
+
+  <!-- PARÁMETROS -->
+  <div class="sol-params">
+    <div class="sp">
+      <label>Latitud °</label>
+      <input type="number" id="sol-lat" value="34.9" min="0" max="90" step="0.1" oninput="solCalc()" onchange="solCalc()"/>
+      <div class="hint">valor absoluto</div>
+    </div>
+    <div class="sp">
+      <label>Hemisferio</label>
+      <select id="sol-hem" onchange="solCalc()">
+        <option value="-1" selected>Sur ▼</option>
+        <option value="1">Norte ▲</option>
+      </select>
+    </div>
+    <div class="sp">
+      <label>Fecha</label>
+      <input type="date" id="sol-date" onchange="solCalc()"/>
+    </div>
+    <div class="sp">
+      <label>Hora solar — <span id="sol-hlbl" style="color:var(--az);font-weight:600;">12:00</span></label>
+      <input type="range" id="sol-hour" min="5" max="19" step="0.25" value="12" oninput="solHlbl();solCalc()"/>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--t3);margin-top:2px;">
+        <span>5h</span><span>12h</span><span>19h</span>
+      </div>
+    </div>
+    <div class="sp" id="sol-sr-cell">
+      <label>Salida / Puesta</label>
+      <div id="sol-sr" style="font-family:var(--mono);font-size:12px;color:var(--t);margin-top:4px;">—</div>
+    </div>
+  </div>
+
+  <!-- 3 BLOQUES -->
+  <div class="sol-3">
+    <!-- TRAYECTORIA -->
+    <div class="sol-blk">
+      <div class="sol-blk-ttl">① Trayectoria solar</div>
+      <div id="sol-tray"></div>
+      <div style="display:flex;gap:10px;margin-top:6px;font-size:9px;flex-wrap:wrap;">
+        <span style="color:#c47c10;">■ Verano</span>
+        <span style="color:var(--t3);">— Equinocc.</span>
+        <span style="color:var(--az);">■ Invierno</span>
+        <span style="color:var(--rj);">● Ahora</span>
+      </div>
+      <div id="sol-pos" class="sol-mini" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- SOMBRAS -->
+    <div class="sol-blk">
+      <div class="sol-blk-ttl">② Sombras</div>
+      <div class="f">
+        <label>Altura del objeto</label>
+        <input type="number" id="sol-obj" value="6" min="0.1" step="0.5" oninput="solCalc()"/> m
+      </div>
+      <div id="sol-shad-svg"></div>
+      <div id="sol-shad-txt" class="sol-mini" style="margin-top:6px;"></div>
+    </div>
+
+    <!-- PROTECCIÓN -->
+    <div class="sol-blk">
+      <div class="sol-blk-ttl">③ Protección solar</div>
+      <div class="f">
+        <label>Altura ventana</label>
+        <input type="number" id="sol-win" value="1.20" min="0.1" step="0.05" oninput="solCalc()"/> m
+      </div>
+      <div class="f">
+        <label>Alero actual</label>
+        <input type="number" id="sol-vol" value="0.60" min="0" step="0.05" oninput="solCalc()"/> m
+      </div>
+      <div id="sol-prot-svg"></div>
+      <div id="sol-prot-txt" class="sol-mini" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <div class="acc">
+    <button class="acc-btn" onclick="toggleAcc(this)">Altitud, azimut, sombras y protección solar <span>▾</span></button>
+    <div class="acc-body">
+      <div>
+        <div class="acc-sub">Declinación y altitud</div>
+        La declinación varía ±23.45° a lo largo del año. La <b>altitud solar α</b> es el ángulo sobre el horizonte. En el hemisferio sur el sol de mediodía está siempre al norte.
+        <span class="formula">sin α = sinφ·sinδ + cosφ·cosδ·cosH</span>
+        <div class="acc-sub">Sombras</div>
+        <span class="formula">L = altura_objeto / tan(α)</span>
+        Con sol bajo (mañana, tarde, invierno) las sombras son largas. Clave para análisis de asoleamiento entre edificios.
+      </div>
+      <div>
+        <div class="acc-sub">Azimut</div>
+        Dirección horizontal del sol desde el norte (0°=N, 90°=E, 180°=S, 270°=O). Determina qué fachadas están expuestas.
+        <div class="acc-sub">Alero y brise-soleil</div>
+        <span class="formula">alero = alt_ventana / tan(α_verano_mediodía)</span>
+        El alero correcto bloquea el sol en verano (ángulo alto) y lo deja pasar en invierno (ángulo bajo). La proyección polar muestra los tres momentos clave: solsticio verano, equinoccio y solsticio invierno.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div style="text-align:center;padding:20px;font-size:9px;color:var(--t3);letter-spacing:.15em;border-top:1px solid var(--p3);">
+  ARQ'TOYBOX · FADU UDELAR · <a href="https://github.com" style="color:var(--t3);">GitHub</a>
 </div>
+
 <script>
-// ─── TABS ───
-function switchTab(id) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  const btn = document.querySelector(`[data-tab="${id}"]`);
-  const panel = document.getElementById(`panel-${id}`);
-  if (btn) btn.classList.add('active');
-  if (panel) panel.classList.add('active');
+// ══ UTILS ════════════════════════════════════
+function $(id){ return document.getElementById(id); }
+function toR(d){ return d*Math.PI/180; }
+function toD(r){ return r*180/Math.PI; }
+
+function fmtN(v, dec){
+  if(v===0) return '0';
+  const a=Math.abs(v);
+  if(a>=1e9) return (v/1e9).toFixed(2)+'e9';
+  if(a>=1e6) return (v/1e6).toPrecision(5);
+  if(a<0.0001) return v.toExponential(3);
+  if(dec!==undefined) return parseFloat(v.toFixed(dec)).toString();
+  if(a<0.01) return v.toPrecision(3);
+  if(a<1) return v.toFixed(3);
+  if(a<100) return v.toFixed(2);
+  return v.toFixed(1);
 }
-document.querySelectorAll('.tab-btn').forEach(btn =>
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab))
-);
 
-// ─── ACORDEÓN ───
-function toggleAcc(id) {
-  document.getElementById(id).classList.toggle('open');
+function fmtReal(mm){
+  if(mm>=1e6) return fmtN(mm/1e6)+'km';
+  if(mm>=1000) return fmtN(mm/1000)+'m';
+  if(mm>=10) return fmtN(mm/10)+'cm';
+  return fmtN(mm)+'mm';
 }
 
-// ─── FOOTER ───
-document.getElementById('footerDate').textContent =
-  new Date().toLocaleDateString('es-UY', { year:'numeric', month:'long' });
+function toggleAcc(btn){
+  const body = btn.nextElementSibling;
+  const open = body.classList.toggle('on');
+  btn.querySelector('span').textContent = open ? '▴' : '▾';
+}
 
-// ════════════════════════════════════════════
-//  ESCALAS
-// ════════════════════════════════════════════
-const COMMON_SCALES = [5,10,20,25,50,75,100,200,500,1000];
-const toMm = { mm:1, cm:10, m:1000 };
-
-document.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel');
-    document.getElementById('scaleVal').value = btn.dataset.v;
-    calcScale();
+function goTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.nav a').forEach(a=>{
+    a.classList.toggle('on', a.getAttribute('href')==='#'+id);
   });
+}
+
+// Nav activo al scroll
+const sections = ['inicio','escalas','escaleras','unidades','secciones','solar'];
+const navLinks = document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{
+  let cur='inicio';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && window.scrollY >= el.offsetTop - 130) cur=id;
+  });
+  navLinks.forEach(a=> a.classList.toggle('on', a.getAttribute('href')==='#'+cur));
 });
 
-document.getElementById('scaleVal').addEventListener('input', () => {
-  const v = +document.getElementById('scaleVal').value;
-  document.querySelectorAll('.preset-btn').forEach(b =>
-    b.classList.toggle('sel', +b.dataset.v === v)
-  );
-  calcScale();
-});
+// Footer date
+$('hdr-date').textContent = new Date().toLocaleDateString('es-UY',{year:'numeric',month:'long'});
 
-['realVal','realUnit','paperVal','paperUnit'].forEach(id =>
-  document.getElementById(id).addEventListener('input', calcScale)
-);
-document.querySelector('[data-v="200"]').classList.add('sel');
+// ══ ESCALAS ════════════════════════════════
+const SC_ALL=[5,10,20,25,50,75,100,200,500,1000];
+const SC_MM={mm:1,cm:10,m:1000};
 
-function calcScale() {
-  const scale = +document.getElementById('scaleVal').value || 200;
-  const rVal  = document.getElementById('realVal').value;
-  const rUnit = document.getElementById('realUnit').value;
-  const pVal  = document.getElementById('paperVal').value;
-  const pUnit = document.getElementById('paperUnit').value;
+function scSet(v){ $('sc-N').value=v; scHL(v); scCalc(); }
+function scHL(v){
+  document.querySelectorAll('.pre').forEach(b=>{
+    b.classList.toggle('on',+b.textContent.split(':')[1]===+v);
+  });
+}
 
-  document.getElementById('scaleLabel').textContent = `Escala 1:${scale}`;
-
-  let realMm = null, paperMm = null;
-
-  if (rVal !== '' && +rVal >= 0) {
-    realMm  = +rVal * toMm[rUnit];
-    paperMm = realMm / scale;
-    document.getElementById('paperVal').value = '';
-  } else if (pVal !== '' && +pVal >= 0) {
-    paperMm = +pVal * toMm[pUnit];
-    realMm  = paperMm * scale;
-  }
-
-  if (realMm === null) {
-    document.getElementById('r-mm').textContent = '—';
-    document.getElementById('r-cm').textContent = '—';
-    document.getElementById('r-real').textContent = '—';
-    document.getElementById('scaleTable').innerHTML = '';
+function scCalc(){
+  const N=+$('sc-N').value||100;
+  const rv=$('sc-R').value, ru=$('sc-RU').value;
+  const pv=$('sc-P').value, pu=$('sc-PU').value;
+  $('sc-lbl').textContent='1:'+N;
+  let realMm=null,paperMm=null;
+  if(rv!==''&&+rv>=0){ realMm=+rv*SC_MM[ru]; paperMm=realMm/N; }
+  else if(pv!==''&&+pv>=0){ paperMm=+pv*SC_MM[pu]; realMm=paperMm*N; }
+  if(realMm===null){
+    $('sc-mm').textContent='—'; $('sc-cm').textContent='—'; $('sc-real').textContent='—';
+    $('sc-comp').innerHTML='<tr><td colspan="3" style="color:var(--t3)">Ingresá una medida.</td></tr>';
     return;
   }
-
-  document.getElementById('r-mm').textContent   = fmt(paperMm, 'mm');
-  document.getElementById('r-cm').textContent   = fmt(paperMm/10, 'cm');
-  document.getElementById('r-real').textContent = fmtReal(realMm);
-
-  const rows = COMMON_SCALES.filter(s => s !== scale).map(s => {
-    const p = realMm / s;
-    return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);">
-      <span style="color:var(--dim)">1:${s}</span>
-      <span>${fmt(p,'mm')} / ${fmt(p/10,'cm')}</span>
-    </div>`;
+  $('sc-mm').textContent=fmtN(paperMm);
+  $('sc-cm').textContent=fmtN(paperMm/10)+' cm';
+  $('sc-real').textContent=fmtReal(realMm);
+  const rows=SC_ALL.filter(s=>s!==N).map(s=>{
+    const p=realMm/s;
+    return `<tr><td>1:${s}</td><td>${fmtN(p)} mm</td><td>${fmtN(p/10)} cm</td></tr>`;
   }).join('');
-  document.getElementById('scaleTable').innerHTML = rows;
+  $('sc-comp').innerHTML=rows;
+}
+scCalc();
+
+// ══ ESCALERAS ════════════════════════════════
+document.querySelectorAll('.st-in').forEach(el=>el.addEventListener('input',stCalc));
+
+function bSt(b){
+  if(b>=60&&b<=65) return ['ok','Cumple'];
+  if(b>=58&&b<=67) return ['lim','Límite'];
+  return ['bad','No cumple'];
 }
 
-function fmt(val, unit) {
-  if (val < 0.01) return '< 0.01 ' + unit;
-  if (val >= 1000) return (val/1000).toFixed(3) + ' m';
-  if (val < 1)    return val.toFixed(3) + ' ' + unit;
-  return val.toFixed(2) + ' ' + unit;
-}
-function fmtReal(mm) {
-  if (mm >= 1000000) return (mm/1000000).toFixed(3) + ' km';
-  if (mm >= 1000)    return (mm/1000).toFixed(3) + ' m';
-  if (mm >= 10)      return (mm/10).toFixed(2) + ' cm';
-  return mm.toFixed(2) + ' mm';
-}
+function stCalc(){
+  const H  =parseFloat($('st-H').value)||0;
+  const D  =parseFloat($('st-D').value)||0;
+  const Nin=parseInt($('st-N').value)||0;
+  const chI=parseFloat($('st-ch').value)||0;
+  const hI =parseFloat($('st-h').value)||0;
+  const Btgt=parseFloat($('st-B').value)||63;
+  if(!H){ $('st-res').innerHTML='<span style="font-size:10px;color:var(--t3)">Ingresá la altura H.</span>'; $('st-draw').innerHTML=''; return; }
 
-// ════════════════════════════════════════════
-//  ESCALERAS
-// ════════════════════════════════════════════
-document.querySelectorAll('.stair-inp').forEach(el => el.addEventListener('input', calcStairs));
-
-function bStatus(b) {
-  if (b >= 60 && b <= 65) return ['status-ok',   '✓ Cumple Blondel'];
-  if (b >= 58 && b <= 67) return ['status-warn',  '~ Límite'];
-  return                         ['status-bad',   '✗ Fuera de rango'];
-}
-
-function calcStairs() {
-  const H   = parseFloat(document.getElementById('st-H').value)  || 0;
-  const D   = parseFloat(document.getElementById('st-D').value)  || 0;
-  const Nin = parseInt  (document.getElementById('st-N').value)  || 0;
-  const cpIn= parseFloat(document.getElementById('st-cp').value) || 0;
-  const hIn = parseFloat(document.getElementById('st-h').value)  || 0;
-  const Btgt= parseFloat(document.getElementById('st-B').value)  || 63;
-
-  if (!H) { showStairEmpty(); return; }
-
-  // Resolver: N es el pivote principal
-  let N, cp, h;
-
-  if (Nin) {
-    N  = Nin;
-    cp = cpIn || H / N;
-    h  = hIn  || (Btgt - 2*cp);
-  } else if (cpIn) {
-    // buscar N que dé cp más cercano al deseado
-    let best = 1, bestDiff = Infinity;
-    for (let n = 3; n <= 40; n++) {
-      const diff = Math.abs(H/n - cpIn);
-      if (diff < bestDiff) { bestDiff = diff; best = n; }
+  let N,ch,h;
+  if(Nin){ N=Nin; ch=chI||H/N; h=hI||(Btgt-2*ch); }
+  else if(chI){
+    let best=1,bd=Infinity;
+    for(let n=3;n<=40;n++){ const d=Math.abs(H/n-chI); if(d<bd){bd=d;best=n;} }
+    N=best; ch=H/N; h=hI||(Btgt-2*ch);
+  } else if(D){
+    let best=1,bd=Infinity;
+    for(let n=3;n<=40;n++){
+      const c=H/n; if(c<12||c>22) continue;
+      const hh=D/(n-1); if(hh<18||hh>45) continue;
+      const d=Math.abs(2*c+hh-Btgt); if(d<bd){bd=d;best=n;}
     }
-    N  = best;
-    cp = H / N;
-    h  = hIn || (Btgt - 2*cp);
-  } else if (D) {
-    // buscar N que mejor satisfaga Blondel dado D
-    let best = 1, bestDiff = Infinity;
-    for (let n = 3; n <= 40; n++) {
-      const c = H / n;
-      if (c < 12 || c > 22) continue;
-      const hh = D / (n - 1);
-      if (hh < 18 || hh > 45) continue;
-      const diff = Math.abs(2*c + hh - Btgt);
-      if (diff < bestDiff) { bestDiff = diff; best = n; }
-    }
-    N  = best;
-    cp = H / N;
-    h  = hIn || (D / (N - 1));
+    N=best; ch=H/N; h=hI||(D/(N-1));
   } else {
-    // solo H: buscar N con Blondel más cercano a target
-    let best = 1, bestDiff = Infinity;
-    for (let n = 3; n <= 40; n++) {
-      const c  = H / n;
-      if (c < 12 || c > 22) continue;
-      const hh = Btgt - 2*c;
-      if (hh < 18) continue;
-      const diff = Math.abs(2*c + hh - Btgt);
-      if (diff < bestDiff) { bestDiff = diff; best = n; }
+    let best=1,bd=Infinity;
+    for(let n=3;n<=40;n++){
+      const c=H/n; if(c<12||c>22) continue;
+      const hh=Btgt-2*c; if(hh<18) continue;
+      const d=Math.abs(2*c+hh-Btgt); if(d<bd){bd=d;best=n;}
     }
-    N  = best;
-    cp = H / N;
-    h  = Btgt - 2*cp;
+    N=best; ch=H/N; h=Btgt-2*ch;
+  }
+  if(!N||ch<=0||h<=0){ $('st-res').innerHTML='<span style="font-size:10px;color:var(--rj)">Sin solución válida.</span>'; return; }
+
+  const B=2*ch+h;
+  const pend=ch/h;
+  const ang=toD(Math.atan(pend));
+  const proy=h*(N-1);
+  const [bcl,btxt]=bSt(B);
+
+  // Alternativas
+  let altRows='';
+  for(let n=Math.max(3,N-3);n<=N+3;n++){
+    if(n===N) continue;
+    const c2=H/n; if(c2<12||c2>22) continue;
+    const h2=D?D/(n-1):(Btgt-2*c2); if(h2<18||h2>45) continue;
+    const b2=2*c2+h2; const[cl2]=bSt(b2);
+    altRows+=`<tr><td>${n}</td><td>${fmtN(c2,2)}</td><td>${fmtN(h2,2)}</td>
+      <td><span class="badge ${cl2}">${fmtN(b2,1)}</span></td>
+      <td>${fmtN(h2*(n-1),0)}</td></tr>`;
   }
 
-  if (!N || cp <= 0 || h <= 0) { showStairEmpty(); return; }
-
-  const blondel  = 2*cp + h;
-  const pendiente = cp / h;
-  const angulo   = Math.atan(pendiente) * 180 / Math.PI;
-  const proyH    = h * (N - 1);
-  const [bcls, btxt] = bStatus(blondel);
-
-  // Tabla de opciones alternativas (±2 escalones)
-  let altRows = '';
-  for (let n = Math.max(3, N-3); n <= N+3; n++) {
-    if (n === N) continue;
-    const c2 = H / n;
-    if (c2 < 12 || c2 > 22) continue;
-    const h2 = D ? D/(n-1) : (Btgt - 2*c2);
-    if (h2 < 18 || h2 > 45) continue;
-    const b2 = 2*c2 + h2;
-    const [cl2] = bStatus(b2);
-    altRows += `<tr>
-      <td style="padding:3px 6px;border:1px solid #ccc;text-align:center;">${n}</td>
-      <td style="padding:3px 6px;border:1px solid #ccc;font-family:'Courier New',monospace;">${c2.toFixed(2)}</td>
-      <td style="padding:3px 6px;border:1px solid #ccc;font-family:'Courier New',monospace;">${h2.toFixed(2)}</td>
-      <td style="padding:3px 6px;border:1px solid #ccc;"><span class="status-badge ${cl2}">${b2.toFixed(2)}</span></td>
-      <td style="padding:3px 6px;border:1px solid #ccc;font-family:'Courier New',monospace;">${(h2*(n-1)).toFixed(0)}</td>
-    </tr>`;
-  }
-
-  document.getElementById('stairResult').innerHTML = `
-    <table style="border-collapse:collapse; width:100%; font-size:12px; margin-bottom:10px;">
-      <tr style="background:#000080;color:#fff;">
-        <th colspan="2" style="padding:4px 8px; text-align:left;">Solución principal</th>
-      </tr>
-      <tr><td style="padding:3px 8px; border:1px solid #ccc; font-weight:bold; background:#eeeeff;">N° escalones</td>
-          <td style="padding:3px 8px; border:1px solid #ccc; font-family:'Courier New',monospace; font-size:16px; font-weight:bold;">${N}</td></tr>
-      <tr><td style="padding:3px 8px; border:1px solid #ccc; font-weight:bold;">Contrahuella ch</td>
-          <td style="padding:3px 8px; border:1px solid #ccc; font-family:'Courier New',monospace;">${cp.toFixed(2)} cm</td></tr>
-      <tr><td style="padding:3px 8px; border:1px solid #ccc; font-weight:bold;">Huella h</td>
-          <td style="padding:3px 8px; border:1px solid #ccc; font-family:'Courier New',monospace;">${h.toFixed(2)} cm</td></tr>
-      <tr><td style="padding:3px 8px; border:1px solid #ccc; font-weight:bold;">Blondel (2ch+h)</td>
-          <td style="padding:3px 8px; border:1px solid #ccc;"><span class="status-badge ${bcls}">${blondel.toFixed(2)} cm — ${btxt}</span></td></tr>
-      <tr><td style="padding:3px 8px; border:1px solid #ccc; font-weight:bold;">Pendiente</td>
-          <td style="padding:3px 8px; border:1px solid #ccc; font-family:'Courier New',monospace;">${(pendiente*100).toFixed(1)}%</td></tr>
-      <tr><td style="padding:3px 8px; border:1px solid #ccc; font-weight:bold;">Ángulo</td>
-          <td style="padding:3px 8px; border:1px solid #ccc; font-family:'Courier New',monospace;">${angulo.toFixed(1)}°</td></tr>
-      <tr><td style="padding:3px 8px; border:1px solid #ccc; font-weight:bold;">Proyección H</td>
-          <td style="padding:3px 8px; border:1px solid #ccc; font-family:'Courier New',monospace;">${proyH.toFixed(1)} cm</td></tr>
+  $('st-res').innerHTML=`
+    <table class="rtab">
+      <tr class="hl"><td>N° escalones</td><td style="font-size:18px">${N}</td></tr>
+      <tr><td>Contrahuella ch</td><td>${fmtN(ch,2)} cm</td></tr>
+      <tr><td>Huella h</td><td>${fmtN(h,2)} cm</td></tr>
+      <tr><td>Blondel</td><td>${fmtN(B,2)} <span class="badge ${bcl}">${btxt}</span></td></tr>
+      <tr><td>Pendiente</td><td>${fmtN(pend*100,1)} %</td></tr>
+      <tr><td>Ángulo</td><td>${fmtN(ang,1)}°</td></tr>
+      <tr><td>Proyección H</td><td>${fmtN(proy,1)} cm</td></tr>
     </table>
-    ${altRows ? `<div style="font-size:10px;font-weight:bold;margin-bottom:4px;color:#000080;">Alternativas cercanas:</div>
-    <table style="border-collapse:collapse;width:100%;font-size:10px;">
-      <tr style="background:#ccccee;">
-        <th style="padding:3px 6px;border:1px solid #aaa;">N</th>
-        <th style="padding:3px 6px;border:1px solid #aaa;">ch</th>
-        <th style="padding:3px 6px;border:1px solid #aaa;">h</th>
-        <th style="padding:3px 6px;border:1px solid #aaa;">Blondel</th>
-        <th style="padding:3px 6px;border:1px solid #aaa;">Proy.</th>
-      </tr>${altRows}</table>` : ''}
-  `;
+    ${altRows?`<div style="font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin:10px 0 4px;">Alternativas</div>
+    <table class="alts"><thead><tr><th>N</th><th>ch</th><th>h</th><th>Blondel</th><th>Proy.</th></tr></thead>
+    <tbody>${altRows}</tbody></table>`:''}`;
 
-  drawStairs(cp, h, N, H);
+  stDraw(ch,h,N,H);
 }
 
-function showStairEmpty() {
-  document.getElementById('stairResult').innerHTML =
-    '<span style="color:#666;font-size:11px;">Ingresá la altura H para empezar.</span>';
-  document.getElementById('stairDrawing').innerHTML = '';
-}
+function stDraw(ch,h,N,H){
+  // SECCIÓN
+  const vis=N;
+  const SH=200, SP=30;
+  const scY=Math.min((SH-SP*2)/H, 1.8);
+  const scX=Math.min(scY, 1.5);
+  const svgW=SP*2+h*vis*scX+50;
+  let path=`M ${SP} ${SH-SP}`;
+  for(let i=0;i<vis;i++){
+    const x0=SP+i*h*scX, y0=SH-SP-i*ch*scY;
+    path+=` L ${x0+h*scX} ${y0} L ${x0+h*scX} ${y0-ch*scY}`;
+  }
+  const totW=h*vis*scX, totH=H*scY;
+  const cx=SP+totW+10, cy1=SH-SP, cy2=SH-SP-totH;
+  const hx1=SP, hx2=SP+h*scX, hy=SH-SP+16;
+  const lx=SP+(vis-1)*h*scX+h*scX+10;
+  const ly1=SH-SP-(vis-1)*ch*scY, ly2=ly1-ch*scY;
 
-function drawStairs(cp, h, N, H) {
-  // ── SECCIÓN (perfil) ──────────────────────
-  const maxVis = N;
-  const SH = 220, SP = 36;
-  // escala: que la altura total quepa en SH-2*SP
-  const scY = (SH - SP*2) / H;
-  const scX = scY; // misma escala para no distorsionar
-  const svgW_sec = SP*2 + h * maxVis * scX + 40;
-
-  let secPath = `M ${SP} ${SH - SP}`;
-  for (let i = 0; i < maxVis; i++) {
-    const x0 = SP + i * h * scX;
-    const y0 = SH - SP - i * cp * scY;
-    secPath += ` L ${x0 + h*scX} ${y0} L ${x0 + h*scX} ${y0 - cp*scY}`;
+  // PLANTA
+  const plM=h*(N-1);
+  const ancho=100;
+  const scP=Math.min(220/plM, 60/ancho, 1.8);
+  const plW=plM*scP, plA=ancho*scP;
+  const PP=24, plH=plA+PP*2+24;
+  let huellas='';
+  for(let i=0;i<N-1;i++){
+    const x=PP+i*h*scP;
+    const shade=i%2===0?'rgba(26,58,92,.06)':'rgba(26,58,92,.12)';
+    huellas+=`<rect x="${x}" y="${PP}" width="${h*scP}" height="${plA}" fill="${shade}" stroke="var(--az2)" stroke-width="0.6"/>`;
+    if(h*scP>12) huellas+=`<text x="${x+h*scP/2}" y="${PP+plA/2+3}" fill="var(--t3)" font-size="7" font-family="IBM Plex Mono,monospace" text-anchor="middle">${i+1}</text>`;
   }
 
-  // línea de suelo y techo
-  const totalW = h * maxVis * scX;
-  const totalH_px = H * scY;
-
-  // cotas
-  const cotaX  = SP + totalW + 8;
-  const cotaY1 = SH - SP;
-  const cotaY2 = SH - SP - totalH_px;
-
-  // cota huella (primer peldaño)
-  const cH_x1 = SP, cH_x2 = SP + h*scX;
-  const cH_y  = SH - SP + 14;
-
-  // cota cp (último visible)
-  const last_x = SP + (maxVis-1)*h*scX + h*scX + 8;
-  const last_y1 = SH - SP - (maxVis-1)*cp*scY;
-  const last_y2 = SH - SP - maxVis*cp*scY;
-
-  const secSVG = `<svg viewBox="0 0 ${svgW_sec} ${SH+20}" style="width:100%;display:block;" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- fondo -->
-    <rect width="${svgW_sec}" height="${SH+20}" fill="#f8f8f8"/>
-    <!-- suelo -->
-    <line x1="${SP-10}" y1="${SH-SP}" x2="${SP + totalW + 10}" y2="${SH-SP}" stroke="#999" stroke-width="1" stroke-dasharray="4,3"/>
-    <!-- techo/llegada -->
-    <line x1="${SP-10}" y1="${SH-SP-totalH_px}" x2="${SP + totalW + 10}" y2="${SH-SP-totalH_px}" stroke="#999" stroke-width="1" stroke-dasharray="4,3"/>
-    <!-- peldaños -->
-    <path d="${secPath}" stroke="#000080" stroke-width="2" fill="none" stroke-linejoin="miter"/>
-    <!-- línea diagonal de referencia -->
-    <line x1="${SP}" y1="${SH-SP}" x2="${SP + totalW}" y2="${SH-SP-totalH_px}" stroke="#cccccc" stroke-width="1" stroke-dasharray="3,3"/>
-    <!-- cota altura total -->
-    <line x1="${cotaX}" y1="${cotaY1}" x2="${cotaX}" y2="${cotaY2}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${cotaX-4}" y1="${cotaY1}" x2="${cotaX+4}" y2="${cotaY1}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${cotaX-4}" y1="${cotaY2}" x2="${cotaX+4}" y2="${cotaY2}" stroke="#cc0000" stroke-width="1"/>
-    <text x="${cotaX+5}" y="${(cotaY1+cotaY2)/2+4}" fill="#cc0000" font-size="9" font-family="Arial">H=${H} cm</text>
-    <!-- cota huella -->
-    <line x1="${cH_x1}" y1="${cH_y}" x2="${cH_x2}" y2="${cH_y}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${cH_x1}" y1="${cH_y-4}" x2="${cH_x1}" y2="${cH_y+4}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${cH_x2}" y1="${cH_y-4}" x2="${cH_x2}" y2="${cH_y+4}" stroke="#cc0000" stroke-width="1"/>
-    <text x="${(cH_x1+cH_x2)/2 - 12}" y="${cH_y+12}" fill="#cc0000" font-size="9" font-family="Arial">h=${h.toFixed(1)}</text>
-    <!-- cota contrahuella -->
-    <line x1="${last_x}" y1="${last_y1}" x2="${last_x}" y2="${last_y2}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${last_x-4}" y1="${last_y1}" x2="${last_x+4}" y2="${last_y1}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${last_x-4}" y1="${last_y2}" x2="${last_x+4}" y2="${last_y2}" stroke="#cc0000" stroke-width="1"/>
-    <text x="${last_x+5}" y="${(last_y1+last_y2)/2+4}" fill="#cc0000" font-size="9" font-family="Arial">ch=${cp.toFixed(1)}</text>
-    <!-- ángulo -->
-    <text x="${SP+4}" y="${SH-SP-8}" fill="#666" font-size="8" font-family="Arial">${(Math.atan(cp/h)*180/Math.PI).toFixed(1)}°</text>
-    <!-- etiqueta -->
-    <text x="${SP}" y="10" fill="#000080" font-size="9" font-family="Arial" font-weight="bold">SECCIÓN — ${N} escalones</text>
+  $('st-draw').innerHTML=`
+  <svg viewBox="0 0 ${Math.max(svgW,200)} ${SH+10}" style="width:100%;max-width:${Math.max(svgW,200)}px;display:block;margin-bottom:12px;" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="${SP-8}" y1="${SH-SP}" x2="${svgW-10}" y2="${SH-SP}" stroke="var(--t3)" stroke-width="1"/>
+    <line x1="${SP-8}" y1="${SH-SP-totH}" x2="${svgW-10}" y2="${SH-SP-totH}" stroke="var(--t3)" stroke-width="0.5" stroke-dasharray="4,3"/>
+    <path d="${path}" stroke="var(--az)" stroke-width="2" stroke-linejoin="miter"/>
+    <line x1="${SP}" y1="${SH-SP}" x2="${SP+totW}" y2="${SH-SP-totH}" stroke="var(--p3)" stroke-width="1" stroke-dasharray="3,3"/>
+    <line x1="${cx}" y1="${cy1}" x2="${cx}" y2="${cy2}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${cx-3}" y1="${cy1}" x2="${cx+3}" y2="${cy1}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${cx-3}" y1="${cy2}" x2="${cx+3}" y2="${cy2}" stroke="var(--rj)" stroke-width="0.8"/>
+    <text x="${cx+5}" y="${(cy1+cy2)/2+3}" fill="var(--rj)" font-size="8" font-family="IBM Plex Mono,monospace">H=${fmtN(H,0)}</text>
+    <line x1="${hx1}" y1="${hy}" x2="${hx2}" y2="${hy}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${hx1}" y1="${hy-3}" x2="${hx1}" y2="${hy+3}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${hx2}" y1="${hy-3}" x2="${hx2}" y2="${hy+3}" stroke="var(--rj)" stroke-width="0.8"/>
+    <text x="${(hx1+hx2)/2}" y="${hy+11}" fill="var(--rj)" font-size="8" font-family="IBM Plex Mono,monospace" text-anchor="middle">h=${fmtN(h,1)}</text>
+    <line x1="${lx}" y1="${ly1}" x2="${lx}" y2="${ly2}" stroke="var(--rj)" stroke-width="0.8"/>
+    <text x="${lx+4}" y="${(ly1+ly2)/2+3}" fill="var(--rj)" font-size="8" font-family="IBM Plex Mono,monospace">ch=${fmtN(ch,1)}</text>
+    <text x="${SP}" y="10" fill="var(--t3)" font-size="8" font-family="IBM Plex Sans Condensed,sans-serif" font-weight="600" letter-spacing="1">SECCIÓN — ${N} escalones</text>
+  </svg>
+  <svg viewBox="0 0 ${plW+PP*2+30} ${plH}" style="width:100%;max-width:${plW+PP*2+30}px;display:block;" fill="none" xmlns="http://www.w3.org/2000/svg">
+    ${huellas}
+    <rect x="${PP}" y="${PP}" width="${plW}" height="${plA}" fill="none" stroke="var(--az)" stroke-width="1.5"/>
+    <line x1="${PP}" y1="${PP+plA+12}" x2="${PP+plW}" y2="${PP+plA+12}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${PP}" y1="${PP+plA+9}" x2="${PP}" y2="${PP+plA+15}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${PP+plW}" y1="${PP+plA+9}" x2="${PP+plW}" y2="${PP+plA+15}" stroke="var(--rj)" stroke-width="0.8"/>
+    <text x="${PP+plW/2}" y="${PP+plA+24}" fill="var(--rj)" font-size="8" font-family="IBM Plex Mono,monospace" text-anchor="middle">D=${fmtN(plM,1)} cm</text>
+    <text x="${PP}" y="${PP-4}" fill="var(--t3)" font-size="8" font-family="IBM Plex Sans Condensed,sans-serif" font-weight="600" letter-spacing="1">PLANTA</text>
   </svg>`;
-
-  // ── PLANTA ─────────────────────────────────
-  const PP = 28;
-  const plW_real = h * (N-1); // proyección horizontal real
-  const ancho_real = 100;     // ancho de escalera default 100 cm
-  const scP = Math.min(280 / plW_real, 100 / ancho_real, 1.2);
-  const plW_px = plW_real * scP;
-  const plA_px = ancho_real * scP;
-  const svgW_pl = plW_px + PP*2 + 40;
-  const svgH_pl = plA_px + PP*2 + 30;
-
-  // Huellas en planta
-  let huellasRect = '';
-  for (let i = 0; i < N-1; i++) {
-    const x = PP + i * h * scP;
-    const shade = i % 2 === 0 ? '#dde' : '#eef';
-    huellasRect += `<rect x="${x}" y="${PP}" width="${h*scP}" height="${plA_px}" fill="${shade}" stroke="#000080" stroke-width="0.8"/>`;
-    // número de escalón
-    if (h*scP > 14) {
-      huellasRect += `<text x="${x + h*scP/2 - 4}" y="${PP + plA_px/2 + 4}" fill="#333" font-size="8" font-family="Arial">${i+1}</text>`;
-    }
-  }
-
-  // línea de corte (donde arranca la sección)
-  const cortX = PP;
-
-  // cota desarrollo en planta
-  const cotPY = PP + plA_px + 14;
-
-  const plantSVG = `<svg viewBox="0 0 ${svgW_pl} ${svgH_pl}" style="width:100%;display:block;margin-top:10px;" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="${svgW_pl}" height="${svgH_pl}" fill="#f8f8f8"/>
-    ${huellasRect}
-    <!-- borde exterior -->
-    <rect x="${PP}" y="${PP}" width="${plW_px}" height="${plA_px}" fill="none" stroke="#000080" stroke-width="1.5"/>
-    <!-- cota desarrollo -->
-    <line x1="${PP}" y1="${cotPY}" x2="${PP + plW_px}" y2="${cotPY}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${PP}" y1="${cotPY-4}" x2="${PP}" y2="${cotPY+4}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${PP + plW_px}" y1="${cotPY-4}" x2="${PP + plW_px}" y2="${cotPY+4}" stroke="#cc0000" stroke-width="1"/>
-    <text x="${PP + plW_px/2 - 30}" y="${cotPY+12}" fill="#cc0000" font-size="9" font-family="Arial">D=${plW_real.toFixed(1)} cm</text>
-    <!-- flecha de subida -->
-    <line x1="${PP + plW_px + 8}" y1="${PP + plA_px}" x2="${PP + plW_px + 8}" y2="${PP + 4}" stroke="#666" stroke-width="1"/>
-    <text x="${PP + plW_px + 12}" y="${PP + plA_px/2 + 4}" fill="#666" font-size="8" font-family="Arial">sube</text>
-    <polygon points="${PP+plW_px+4},${PP+4} ${PP+plW_px+12},${PP+4} ${PP+plW_px+8},${PP-2}" fill="#666"/>
-    <!-- etiqueta -->
-    <text x="${PP}" y="12" fill="#000080" font-size="9" font-family="Arial" font-weight="bold">PLANTA — proyección horizontal</text>
-  </svg>`;
-
-  document.getElementById('stairDrawing').innerHTML = secSVG + plantSVG;
 }
-// ════════════════════════════════════════════
-//  CONVERSOR DE UNIDADES
-// ════════════════════════════════════════════
-const UNITS = {
-  longitud: [
-    { id:'mm',    label:'Milímetro (mm)',      toBase: 0.001 },
-    { id:'cm',    label:'Centímetro (cm)',      toBase: 0.01 },
-    { id:'m',     label:'Metro (m)',            toBase: 1 },
-    { id:'km',    label:'Kilómetro (km)',       toBase: 1000 },
-    { id:'in',    label:'Pulgada (in)',         toBase: 0.0254 },
-    { id:'ft',    label:'Pie (ft)',             toBase: 0.3048 },
-    { id:'yd',    label:'Yarda (yd)',           toBase: 0.9144 },
-    { id:'mi',    label:'Milla (mi)',           toBase: 1609.344 },
-    { id:'vara',  label:'Vara (UY)',            toBase: 0.836 },
+
+// ══ UNIDADES ═════════════════════════════════
+const UN={
+  longitud:[
+    {id:'mm',label:'mm'},
+    {id:'cm',label:'cm'},
+    {id:'m',label:'m'},
+    {id:'km',label:'km'},
+    {id:'in',label:'pulgada (in)'},
+    {id:'ft',label:'pie (ft)'},
+    {id:'yd',label:'yarda (yd)'},
+    {id:'mi',label:'milla (mi)'},
+    {id:'vara',label:'vara (UY)'},
   ],
-  superficie: [
-    { id:'mm2',   label:'mm²',                 toBase: 0.000001 },
-    { id:'cm2',   label:'cm²',                 toBase: 0.0001 },
-    { id:'m2',    label:'m²',                  toBase: 1 },
-    { id:'ha',    label:'Hectárea (ha)',        toBase: 10000 },
-    { id:'km2',   label:'km²',                 toBase: 1000000 },
-    { id:'ft2',   label:'Pie² (ft²)',          toBase: 0.09290304 },
-    { id:'yd2',   label:'Yarda² (yd²)',        toBase: 0.83612736 },
-    { id:'acre',  label:'Acre',                toBase: 4046.8564 },
-    { id:'vara2', label:'Vara² (UY)',          toBase: 0.698896 },
+  superficie:[
+    {id:'mm2',label:'mm²'},
+    {id:'cm2',label:'cm²'},
+    {id:'m2',label:'m²'},
+    {id:'ha',label:'hectárea (ha)'},
+    {id:'km2',label:'km²'},
+    {id:'ft2',label:'pie² (ft²)'},
+    {id:'acre',label:'acre'},
+    {id:'vara2',label:'vara² (UY)'},
   ],
-  volumen: [
-    { id:'mm3',   label:'mm³',                 toBase: 0.000000001 },
-    { id:'cm3',   label:'cm³ / ml',            toBase: 0.000001 },
-    { id:'l',     label:'Litro (l)',            toBase: 0.001 },
-    { id:'m3',    label:'m³',                  toBase: 1 },
-    { id:'ft3',   label:'Pie³ (ft³)',          toBase: 0.0283168 },
-    { id:'yd3',   label:'Yarda³ (yd³)',        toBase: 0.764555 },
-    { id:'gal',   label:'Galón US (gal)',      toBase: 0.00378541 },
-    { id:'bbl',   label:'Barril (bbl)',        toBase: 0.158987 },
+  volumen:[
+    {id:'cm3',label:'cm³ / ml'},
+    {id:'l',label:'litro (l)'},
+    {id:'m3',label:'m³'},
+    {id:'ft3',label:'pie³ (ft³)'},
+    {id:'gal',label:'galón US'},
   ],
 };
-
-let currentCat = 'longitud';
-
-function buildUnitSelect() {
-  const sel = document.getElementById('unitFrom');
-  sel.innerHTML = '';
-  UNITS[currentCat].forEach(u => {
-    const opt = document.createElement('option');
-    opt.value = u.id;
-    opt.textContent = u.label;
-    sel.appendChild(opt);
+const UB={
+  mm:0.001,cm:0.01,m:1,km:1000,in:0.0254,ft:0.3048,yd:0.9144,mi:1609.344,vara:0.836,
+  mm2:1e-6,cm2:1e-4,m2:1,ha:1e4,km2:1e6,ft2:0.0929,acre:4046.86,vara2:0.698896,
+  cm3:1e-6,l:0.001,m3:1,ft3:0.028317,gal:0.003785,
+};
+let currentUnitCat='longitud';
+function unCat(btn){
+  document.querySelectorAll('#un-tabs .mtab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  currentUnitCat=btn.dataset.cat;
+  const sel=$('un-from'); sel.innerHTML='';
+  const def={longitud:'m',superficie:'m2',volumen:'m3'};
+  UN[currentUnitCat].forEach(u=>{
+    const o=document.createElement('option');
+    o.value=u.id; o.textContent=u.label;
+    sel.appendChild(o);
   });
-  // default útil por categoría
-  const defaults = { longitud:'m', superficie:'m2', volumen:'m3' };
-  sel.value = defaults[currentCat];
+  sel.value=def[unCat];
+  unCalc();
+}
+function unCalc(){
+  const v=parseFloat($('un-val').value);
+  const fromId=$('un-from').value;
+  if(isNaN(v)||!fromId){ $('un-res').innerHTML='<span style="color:var(--t3)">Ingresá un valor.</span>'; return; }
+  const base=v*UB[fromId];
+  const rows=UN[currentUnitCat].filter(u=>u.id!==fromId).map(u=>{
+    const conv=base/UB[u.id];
+    return `<tr><td style="color:var(--t3)">${u.label}</td><td>${fmtN(conv)}</td></tr>`;
+  }).join('');
+  $('un-res').innerHTML=`<table class="comp">${rows}</table>`;
+}
+unCat(document.querySelector('#un-tabs .mtab'));
+
+// ══ SECCIONES ════════════════════════════════
+let secT='rect';
+function secTipo(btn){
+  document.querySelectorAll('[data-sec]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.mp').forEach(p=>p.classList.remove('on'));
+  secT=btn.dataset.sec;
+  $('sf-'+secT).classList.add('on');
+  secCalc();
+}
+function gv(id){ return parseFloat($(id).value)||0; }
+function secCalc(){
+  let r=null;
+  if(secT==='rect'){ const b=gv('r-b'),h=gv('r-h'); if(b&&h){ const A=b*h,yg=h/2,xg=b/2,Ix=b*h**3/12,Iy=h*b**3/12,Wx=Ix/yg,Wy=Iy/xg,ix=Math.sqrt(Ix/A),iy=Math.sqrt(Iy/A); r={t:'rect',d:{b,h},A,xg,yg,Ix,Iy,Wx,Wy,ix,iy}; }}
+  else if(secT==='circ'){ const d=gv('c-d'),di=gv('c-di'); if(d&&di<d){ const R=d/2,r2=di/2,A=Math.PI*(R**2-r2**2),Ix=Math.PI*(d**4-di**4)/64,Iy=Ix,Wx=Ix/R,Wy=Wy=Ix/R,ix=Math.sqrt(Ix/A),iy=ix; r={t:'circ',d:{d,di},A,xg:0,yg:R,Ix,Iy,Wx,Wy,ix,iy}; }}
+  else if(secT==='I'){ const bf=gv('i-bf'),tf=gv('i-tf'),hw=gv('i-hw'),tw=gv('i-tw'); if(bf&&tf&&hw&&tw){ const H=hw+2*tf,A=2*bf*tf+hw*tw,yg=H/2,Ix=2*(bf*tf**3/12+bf*tf*(hw/2+tf/2)**2)+tw*hw**3/12,Iy=2*(tf*bf**3/12)+hw*tw**3/12,Wx=Ix/yg,Wy=Iy/(bf/2),ix=Math.sqrt(Ix/A),iy=Math.sqrt(Iy/A); r={t:'I',d:{bf,tf,hw,tw,H},A,xg:bf/2,yg,Ix,Iy,Wx,Wy,ix,iy}; }}
+  else if(secT==='L'){ const b=gv('l-b'),h=gv('l-h'),t=gv('l-t'); if(b&&h&&t&&t<b&&t<h){ const A1=b*t,y1=t/2,x1=b/2,A2=(h-t)*t,y2=t+(h-t)/2,x2=t/2,A=A1+A2,yg=(A1*y1+A2*y2)/A,xg=(A1*x1+A2*x2)/A,Ix=b*t**3/12+A1*(yg-y1)**2+t*(h-t)**3/12+A2*(yg-y2)**2,Iy=t*b**3/12+A1*(xg-x1)**2+(h-t)*t**3/12+A2*(xg-x2)**2,Wx=Ix/Math.max(yg,h-yg),Wy=Iy/Math.max(xg,b-xg),ix=Math.sqrt(Ix/A),iy=Math.sqrt(Iy/A); r={t:'L',d:{b,h,t},A,xg,yg,Ix,Iy,Wx,Wy,ix,iy}; }}
+  else if(secT==='T'){ const bf=gv('t-bf'),tf=gv('t-tf'),hw=gv('t-hw'),tw=gv('t-tw'); if(bf&&tf&&hw&&tw){ const H=hw+tf,A1=bf*tf,y1=H-tf/2,A2=hw*tw,y2=hw/2,A=A1+A2,yg=(A1*y1+A2*y2)/A,Ix=bf*tf**3/12+A1*(yg-y1)**2+tw*hw**3/12+A2*(yg-y2)**2,Iy=tf*bf**3/12+hw*tw**3/12,Wx=Ix/Math.max(yg,H-yg),Wy=Iy/(bf/2),ix=Math.sqrt(Ix/A),iy=Math.sqrt(Iy/A); r={t:'T',d:{bf,tf,hw,tw,H},A,xg:bf/2,yg,Ix,Iy,Wx,Wy,ix,iy}; }}
+
+  if(!r){ $('sec-res').innerHTML='<span style="font-size:10px;color:var(--t3)">Ingresá las dimensiones.</span>'; $('sec-diag').innerHTML=''; return; }
+
+  $('sec-res').innerHTML=`<table class="rtab">
+    <tr><td>Área A</td><td>${fmtN(r.A,2)} cm²</td></tr>
+    <tr><td>Baricentro ȳ</td><td>${fmtN(r.yg,3)} cm</td></tr>
+    <tr><td>Baricentro x̄</td><td>${fmtN(r.xg,3)} cm</td></tr>
+    <tr class="hl"><td>Inercia Ix</td><td>${fmtN(r.Ix)} cm⁴</td></tr>
+    <tr><td>Inercia Iy</td><td>${fmtN(r.Iy)} cm⁴</td></tr>
+    <tr class="hl"><td>Mód. resist. Wx</td><td>${fmtN(r.Wx)} cm³</td></tr>
+    <tr><td>Mód. resist. Wy</td><td>${fmtN(r.Wy)} cm³</td></tr>
+    <tr><td>Radio de giro ix</td><td>${fmtN(r.ix,3)} cm</td></tr>
+    <tr><td>Radio de giro iy</td><td>${fmtN(r.iy,3)} cm</td></tr>
+  </table>`;
+  secDiag(r);
 }
 
-function calcUnits() {
-  const raw = document.getElementById('unitVal').value;
-  const fromId = document.getElementById('unitFrom').value;
-  if (raw === '' || isNaN(+raw)) {
-    document.getElementById('unitResult').innerHTML =
-      '<div style="color:var(--dim);font-size:11px;">Ingresá un valor para convertir.</div>';
-    return;
-  }
-  const val = +raw;
-  const units = UNITS[currentCat];
-  const fromUnit = units.find(u => u.id === fromId);
-  if (!fromUnit) return;
+function secDiag(r){
+  const W=180,H=180,pd=24;
+  const av=W-pd*2;
+  let shapes='',marks='';
+  function sc(dims){ return Math.min(av/(dims.w||1),av/(dims.h||1)); }
 
-  const baseVal = val * fromUnit.toBase;
-
-  const rows = units
-    .filter(u => u.id !== fromId)
-    .map(u => {
-      const converted = baseVal / u.toBase;
-      return `<div class="result-row">
-        <span class="result-label">${u.label}</span>
-        <span class="result-val small">${fmtUnit(converted)}</span>
-      </div>`;
-    }).join('');
-
-  document.getElementById('unitResult').innerHTML =
-    `<div class="result-box">${rows}</div>`;
-}
-
-function fmtUnit(v) {
-  if (v === 0) return '0';
-  const abs = Math.abs(v);
-  if (abs >= 1e12) return (v/1e12).toPrecision(5) + ' ×10¹²';
-  if (abs >= 1e9)  return (v/1e9).toPrecision(5)  + ' ×10⁹';
-  if (abs >= 1e6)  return (v/1e6).toPrecision(6)  + ' ×10⁶';
-  if (abs < 1e-6)  return v.toExponential(4);
-  if (abs < 0.001) return v.toPrecision(4);
-  if (abs < 1)     return v.toPrecision(5);
-  if (abs < 1000)  return parseFloat(v.toFixed(6)).toString();
-  return parseFloat(v.toFixed(4)).toString();
-}
-
-// listeners unidades
-document.querySelectorAll('#unitCatTabs .mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('#unitCatTabs .mode-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentCat = btn.dataset.cat;
-    buildUnitSelect();
-    calcUnits();
-  });
-});
-document.getElementById('unitVal').addEventListener('input', calcUnits);
-document.getElementById('unitFrom').addEventListener('change', calcUnits);
-
-// init
-buildUnitSelect();
-
-// ════════════════════════════════════════════
-//  PROPIEDADES DE SECCIONES
-// ════════════════════════════════════════════
-// Sección activa
-let secType = 'rect';
-
-const secBtns = document.querySelectorAll('#secTypeTabs .mode-btn');
-secBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    secBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    secType = btn.dataset.sec;
-    document.querySelectorAll('.sec-form').forEach(f => f.classList.remove('active'));
-    document.getElementById('sec-form-' + secType).classList.add('active');
-    calcSection();
-  });
-});
-
-// inputs → recalcular
-document.querySelectorAll('.sec-input').forEach(el =>
-  el.addEventListener('input', calcSection)
-);
-
-function gv(id) { return parseFloat(document.getElementById(id).value) || 0; }
-
-function calcSection() {
-  let res = null;
-  if      (secType === 'rect')  res = calcRect();
-  else if (secType === 'circ')  res = calcCirc();
-  else if (secType === 'I')     res = calcI();
-  else if (secType === 'L')     res = calcL();
-  else if (secType === 'T')     res = calcT();
-  if (!res) {
-    document.getElementById('secResult').innerHTML =
-      '<div style="color:var(--dim);font-size:11px;">Ingresá las dimensiones para calcular.</div>';
-    document.getElementById('secDiagram').innerHTML = '';
-    return;
-  }
-  renderSecResult(res);
-  renderSecDiagram(res);
-}
-
-// ── RECTANGULAR ──────────────────────────────
-function calcRect() {
-  const b = gv('rect-b'), h = gv('rect-h');
-  if (!b || !h) return null;
-  const A  = b * h;
-  const ycg = h / 2, xcg = b / 2;
-  const Ix = (b * Math.pow(h, 3)) / 12;
-  const Iy = (h * Math.pow(b, 3)) / 12;
-  const Wx = Ix / ycg;
-  const Wy = Iy / xcg;
-  const ix = Math.sqrt(Ix / A);
-  const iy = Math.sqrt(Iy / A);
-  return { type:'rect', dims:{b,h}, A, xcg, ycg, Ix, Iy, Wx, Wy, ix, iy };
-}
-
-// ── CIRCULAR ─────────────────────────────────
-function calcCirc() {
-  const d = gv('circ-d'), di = gv('circ-di');
-  if (!d) return null;
-  if (di >= d) return null;
-  const R = d/2, r = di/2;
-  const A  = Math.PI * (R*R - r*r);
-  const ycg = 0, xcg = 0; // centrado
-  const Ix = (Math.PI / 64) * (Math.pow(d,4) - Math.pow(di,4));
-  const Iy = Ix;
-  const Wx = Ix / R;
-  const Wy = Wx;
-  const ix = Math.sqrt(Ix / A);
-  const iy = ix;
-  return { type:'circ', dims:{d,di}, A, xcg, ycg: R, Ix, Iy, Wx, Wy, ix, iy };
-}
-
-// ── DOBLE T (I) ───────────────────────────────
-function calcI() {
-  const bf = gv('I-bf'), tf = gv('I-tf'), hw = gv('I-hw'), tw = gv('I-tw');
-  if (!bf || !tf || !hw || !tw) return null;
-  const H  = hw + 2*tf;
-  const A  = 2*bf*tf + hw*tw;
-  const ycg = H/2; // simétrica
-  // Ix = Ix_flanges + Ix_web (Steiner)
-  const Ix_f = 2 * (bf*Math.pow(tf,3)/12 + bf*tf*Math.pow(hw/2+tf/2, 2));
-  const Ix_w = tw*Math.pow(hw,3)/12;
-  const Ix = Ix_f + Ix_w;
-  const Iy = 2*(tf*Math.pow(bf,3)/12) + hw*Math.pow(tw,3)/12;
-  const Wx = Ix / ycg;
-  const Wy = Iy / (bf/2);
-  const ix = Math.sqrt(Ix/A);
-  const iy = Math.sqrt(Iy/A);
-  return { type:'I', dims:{bf,tf,hw,tw,H}, A, xcg:bf/2, ycg, Ix, Iy, Wx, Wy, ix, iy };
-}
-
-// ── L ────────────────────────────────────────
-function calcL() {
-  const b = gv('L-b'), h = gv('L-h'), t = gv('L-t');
-  if (!b || !h || !t) return null;
-  if (t >= b || t >= h) return null;
-  // Dos rectángulos: flange horizontal + web vertical (sin solapamiento)
-  const A1 = b * t;           const y1 = t/2;           const x1 = b/2;
-  const A2 = (h-t) * t;       const y2 = t + (h-t)/2;  const x2 = t/2;
-  const A  = A1 + A2;
-  const ycg = (A1*y1 + A2*y2) / A;
-  const xcg = (A1*x1 + A2*x2) / A;
-  const Ix = (b*Math.pow(t,3)/12 + A1*Math.pow(ycg-y1,2))
-           + (t*Math.pow(h-t,3)/12 + A2*Math.pow(ycg-y2,2));
-  const Iy = (t*Math.pow(b,3)/12 + A1*Math.pow(xcg-x1,2))
-           + ((h-t)*Math.pow(t,3)/12 + A2*Math.pow(xcg-x2,2));
-  const Wx = Ix / Math.max(ycg, h-ycg);
-  const Wy = Iy / Math.max(xcg, b-xcg);
-  const ix = Math.sqrt(Ix/A);
-  const iy = Math.sqrt(Iy/A);
-  return { type:'L', dims:{b,h,t}, A, xcg, ycg, Ix, Iy, Wx, Wy, ix, iy };
-}
-
-// ── T ────────────────────────────────────────
-function calcT() {
-  const bf = gv('T-bf'), tf = gv('T-tf'), hw = gv('T-hw'), tw = gv('T-tw');
-  if (!bf || !tf || !hw || !tw) return null;
-  const H  = hw + tf;
-  const A1 = bf * tf;          const y1 = H - tf/2;
-  const A2 = hw * tw;          const y2 = hw/2;
-  const A  = A1 + A2;
-  const ycg = (A1*y1 + A2*y2) / A;
-  const Ix = (bf*Math.pow(tf,3)/12 + A1*Math.pow(ycg-y1,2))
-           + (tw*Math.pow(hw,3)/12 + A2*Math.pow(ycg-y2,2));
-  const Iy = tf*Math.pow(bf,3)/12 + hw*Math.pow(tw,3)/12;
-  const Wx = Ix / Math.max(ycg, H-ycg);
-  const Wy = Iy / (bf/2);
-  const ix = Math.sqrt(Ix/A);
-  const iy = Math.sqrt(Iy/A);
-  return { type:'T', dims:{bf,tf,hw,tw,H}, A, xcg:bf/2, ycg, Ix, Iy, Wx, Wy, ix, iy };
-}
-
-// ── RENDER RESULTADO ─────────────────────────
-function fmtSec(v, dec=4) {
-  if (v === 0) return '0';
-  if (Math.abs(v) >= 1e6) return v.toExponential(3);
-  if (Math.abs(v) < 0.001) return v.toExponential(3);
-  return parseFloat(v.toFixed(dec)).toString();
-}
-
-function renderSecResult(r) {
-  const rows = [
-    ['Área (A)',              fmtSec(r.A,2),    'cm²'],
-    ['Baricentro ȳ (desde base)', fmtSec(r.ycg,3), 'cm'],
-    ['Baricentro x̄ (desde izq)', fmtSec(r.xcg,3), 'cm'],
-    ['Inercia Ix',           fmtSec(r.Ix),     'cm⁴'],
-    ['Inercia Iy',           fmtSec(r.Iy),     'cm⁴'],
-    ['Módulo resist. Wx',    fmtSec(r.Wx),     'cm³'],
-    ['Módulo resist. Wy',    fmtSec(r.Wy),     'cm³'],
-    ['Radio de giro ix',     fmtSec(r.ix,3),   'cm'],
-    ['Radio de giro iy',     fmtSec(r.iy,3),   'cm'],
-  ];
-  const html = rows.map(([label, val, unit]) => `
-    <div class="result-row">
-      <span class="result-label">${label}</span>
-      <span class="result-val small">${val} <span style="font-size:10px;color:var(--dim)">${unit}</span></span>
-    </div>`).join('');
-  document.getElementById('secResult').innerHTML = `<div class="result-box">${html}</div>`;
-}
-
-// ── DIAGRAMA SVG ─────────────────────────────
-function renderSecDiagram(r) {
-  const W = 200, H = 200, pad = 24;
-  const avW = W - pad*2, avH = H - pad*2;
-  let svg = '';
-
-  function scale(dims) {
-    // devuelve factor px/cm para que quepa
-    const maxW = dims.w || 1, maxH = dims.h || 1;
-    return Math.min(avW/maxW, avH/maxH);
+  if(r.t==='rect'){
+    const {b,h}=r.d, s=sc({w:b,h}), pw=b*s,ph=h*s;
+    const ox=pd+(av-pw)/2, oy=pd+(av-ph)/2;
+    shapes=`<rect x="${ox}" y="${oy}" width="${pw}" height="${ph}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>`;
+    const bx=ox+r.xg*s, by=oy+(h-r.yg)*s;
+    marks=cgMk(bx,by)+cgLn(ox,oy,pw,ph,bx,by);
+  } else if(r.t==='circ'){
+    const {d,di}=r.d, s=sc({w:d,h:d}), R=d/2*s, ri=di/2*s;
+    const cx=W/2,cy=H/2;
+    shapes=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>`;
+    if(ri>0) shapes+=`<circle cx="${cx}" cy="${cy}" r="${ri}" fill="var(--p)" stroke="var(--az)" stroke-width="1"/>`;
+    marks=cgMk(cx,cy)+cgLn(cx-R,cy-R,R*2,R*2,cx,cy);
+  } else if(r.t==='I'){
+    const {bf,tf,hw,tw,H:sh}=r.d, s=sc({w:bf,h:sh});
+    const ox=pd+(av-bf*s)/2, oy=pd+(av-sh*s)/2;
+    const pw=bf*s,fh=tf*s,wh=hw*s,ww=tw*s;
+    shapes=`<rect x="${ox}" y="${oy}" width="${pw}" height="${fh}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>
+            <rect x="${ox+(pw-ww)/2}" y="${oy+fh}" width="${ww}" height="${wh}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>
+            <rect x="${ox}" y="${oy+fh+wh}" width="${pw}" height="${fh}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>`;
+    const bx=ox+r.xg*s, by=oy+(sh-r.yg)*s;
+    marks=cgMk(bx,by)+cgLn(ox,oy,pw,sh*s,bx,by);
+  } else if(r.t==='L'){
+    const {b,h,t}=r.d, s=sc({w:b,h});
+    const ox=pd+(av-b*s)/2, oy=pd+(av-h*s)/2;
+    shapes=`<rect x="${ox}" y="${oy+(h-t)*s}" width="${b*s}" height="${t*s}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>
+            <rect x="${ox}" y="${oy}" width="${t*s}" height="${(h-t)*s}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>`;
+    const bx=ox+r.xg*s, by=oy+(h-r.yg)*s;
+    marks=cgMk(bx,by)+cgLn(ox,oy,b*s,h*s,bx,by);
+  } else if(r.t==='T'){
+    const {bf,tf,hw,tw,H:sh}=r.d, s=sc({w:bf,h:sh});
+    const ox=pd+(av-bf*s)/2, oy=pd+(av-sh*s)/2;
+    const pw=bf*s, ww=tw*s;
+    shapes=`<rect x="${ox}" y="${oy}" width="${pw}" height="${tf*s}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>
+            <rect x="${ox+(pw-ww)/2}" y="${oy+tf*s}" width="${ww}" height="${hw*s}" fill="rgba(26,58,92,.1)" stroke="var(--az)" stroke-width="1.5"/>`;
+    const bx=ox+r.xg*s, by=oy+(sh-r.yg)*s;
+    marks=cgMk(bx,by)+cgLn(ox,oy,pw,sh*s,bx,by);
   }
 
-  if (r.type === 'rect') {
-    const {b, h} = r.dims;
-    const sc = scale({w:b, h});
-    const pw = b*sc, ph = h*sc;
-    const ox = pad + (avW-pw)/2, oy = pad + (avH-ph)/2;
-    // baricentro
-    const bx = ox + r.xcg*sc, by = oy + (h-r.ycg)*sc;
-    svg = rectShape(ox,oy,pw,ph) + cgMark(bx,by) + cgLines(ox,oy,pw,ph,bx,by);
-  }
-  else if (r.type === 'circ') {
-    const {d, di} = r.dims;
-    const sc = scale({w:d, h:d});
-    const R = d/2*sc, r2 = di/2*sc;
-    const cx = W/2, cy = H/2;
-    svg = `<circle cx="${cx}" cy="${cy}" r="${R}" stroke="#1a9e94" stroke-width="1.5" fill="none"/>`;
-    if (r2 > 0) svg += `<circle cx="${cx}" cy="${cy}" r="${r2}" stroke="#2a6090" stroke-width="1" fill="none" stroke-dasharray="4,2"/>`;
-    svg += cgMark(cx, cy) + cgLines(cx-R, cy-R, R*2, R*2, cx, cy);
-  }
-  else if (r.type === 'I') {
-    const {bf, tf, hw, tw, H: sh} = r.dims;
-    const sc = scale({w:bf, h:sh});
-    const ox = pad + (avW - bf*sc)/2;
-    const oy = pad + (avH - sh*sc)/2;
-    const pw = bf*sc, fh = tf*sc, wh = hw*sc, ww = tw*sc;
-    const wx = ox + (pw-ww)/2;
-    svg = rectShape(ox, oy, pw, fh)
-        + rectShape(wx, oy+fh, ww, wh)
-        + rectShape(ox, oy+fh+wh, pw, fh);
-    const bx = ox + r.xcg*sc, by = oy + (sh-r.ycg)*sc;
-    svg += cgMark(bx, by) + cgLines(ox, oy, pw, sh*sc, bx, by);
-  }
-  else if (r.type === 'L') {
-    const {b, h, t} = r.dims;
-    const sc = scale({w:b, h});
-    const ox = pad + (avW - b*sc)/2;
-    const oy = pad + (avH - h*sc)/2;
-    svg = rectShape(ox, oy + (h-t)*sc, b*sc, t*sc)
-        + rectShape(ox, oy, t*sc, (h-t)*sc);
-    const bx = ox + r.xcg*sc, by = oy + (h-r.ycg)*sc;
-    svg += cgMark(bx, by) + cgLines(ox, oy, b*sc, h*sc, bx, by);
-  }
-  else if (r.type === 'T') {
-    const {bf, tf, hw, tw, H: sh} = r.dims;
-    const sc = scale({w:bf, h:sh});
-    const ox = pad + (avW - bf*sc)/2;
-    const oy = pad + (avH - sh*sc)/2;
-    const ww = tw*sc, pw = bf*sc;
-    svg = rectShape(ox, oy, pw, tf*sc)
-        + rectShape(ox + (pw-ww)/2, oy + tf*sc, ww, hw*sc);
-    const bx = ox + r.xcg*sc, by = oy + (sh-r.ycg)*sc;
-    svg += cgMark(bx, by) + cgLines(ox, oy, pw, sh*sc, bx, by);
-  }
-
-  document.getElementById('secDiagram').innerHTML =
-    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:220px;display:block;margin:16px auto 0;" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${W}" height="${H}" fill="#ffffff"/>
-      ${svg}
-    </svg>`;
+  $('sec-diag').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:180px;display:block;margin-top:12px;" fill="none" xmlns="http://www.w3.org/2000/svg">
+    ${shapes}${marks}
+    <text x="4" y="${H-4}" fill="var(--t3)" font-size="7" font-family="IBM Plex Mono,monospace">✕ baricentro · — ejes centroidales</text>
+  </svg>`;
+}
+function cgMk(cx,cy){
+  return `<line x1="${cx-5}" y1="${cy}" x2="${cx+5}" y2="${cy}" stroke="var(--rj)" stroke-width="1.5"/>
+          <line x1="${cx}" y1="${cy-5}" x2="${cx}" y2="${cy+5}" stroke="var(--rj)" stroke-width="1.5"/>
+          <circle cx="${cx}" cy="${cy}" r="1.5" fill="var(--rj)"/>`;
+}
+function cgLn(ox,oy,pw,ph,bx,by){
+  return `<line x1="${bx}" y1="${oy}" x2="${bx}" y2="${oy+ph}" stroke="var(--rj)" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.5"/>
+          <line x1="${ox}" y1="${by}" x2="${ox+pw}" y2="${by}" stroke="var(--rj)" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.5"/>`;
 }
 
-function rectShape(x,y,w,h) {
-  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" stroke="#1a9e94" stroke-width="1.5" fill="rgba(26,158,148,0.1)"/>`;
-}
-function cgMark(cx,cy) {
-  const s = 5;
-  return `<line x1="${cx-s}" y1="${cy}" x2="${cx+s}" y2="${cy}" stroke="#c47c10" stroke-width="1.5"/>
-          <line x1="${cx}" y1="${cy-s}" x2="${cx}" y2="${cy+s}" stroke="#c47c10" stroke-width="1.5"/>
-          <circle cx="${cx}" cy="${cy}" r="2" fill="#c47c10"/>`;
-}
-function cgLines(ox,oy,pw,ph,bx,by) {
-  return `<line x1="${bx}" y1="${oy}" x2="${bx}" y2="${oy+ph}" stroke="#c47c10" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.5"/>
-          <line x1="${ox}" y1="${by}" x2="${ox+pw}" y2="${by}" stroke="#c47c10" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.5"/>`;
-}
-// ════════════════════════════════════════════
-//  SOLAR
-// ════════════════════════════════════════════
-
-(function() {
-  const d = new Date(), pad = n => String(n).padStart(2,'0');
-  document.getElementById('sol-date').value =
-    `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+// ══ SOLAR ════════════════════════════════════
+(function(){
+  const d=new Date(), pad=n=>String(n).padStart(2,'0');
+  $('sol-date').value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 })();
 
-const solHour = document.getElementById('sol-hour');
-const solHourLabel = document.getElementById('sol-hour-label');
-solHour.addEventListener('input', () => { updateHourLabel(); calcSolar(); });
-
-function updateHourLabel() {
-  const h = +solHour.value;
-  const hh = Math.floor(h), mm = Math.round((h-hh)*60);
-  solHourLabel.textContent = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+function solHlbl(){
+  const h=+$('sol-hour').value, hh=Math.floor(h), mm=Math.round((h-hh)*60);
+  $('sol-hlbl').textContent=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
 }
 
-['sol-lat','sol-hem','sol-date','sol-obj-h','sol-vol','sol-win-h'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) { el.addEventListener('input', calcSolar); el.addEventListener('change', calcSolar); }
-});
+function dayOfYear(s){ const d=new Date(s); return Math.floor((d-new Date(d.getFullYear(),0,0))/86400000); }
 
-function toR(d) { return d * Math.PI / 180; }
-function toD(r) { return r * 180 / Math.PI; }
-
-function dayOfYear(dateStr) {
-  const d = new Date(dateStr), s = new Date(d.getFullYear(), 0, 0);
-  return Math.floor((d - s) / 86400000);
+function solPos(lat,doy,hour){
+  const la=toR(lat), de=toR(23.45*Math.sin(toR(360/365*(284+doy)))), H=toR((hour-12)*15);
+  const sa=Math.sin(la)*Math.sin(de)+Math.cos(la)*Math.cos(de)*Math.cos(H);
+  const alt=Math.asin(Math.max(-1,Math.min(1,sa)));
+  const ca=(Math.sin(de)-Math.sin(alt)*Math.sin(la))/(Math.cos(alt)*Math.cos(la));
+  let az=toD(Math.acos(Math.max(-1,Math.min(1,ca))));
+  if(hour>12) az=360-az;
+  return {alt:toD(alt),az,de:toD(de)};
 }
 
-function solarPos(lat_deg, doy, hour) {
-  const lat  = toR(lat_deg);
-  const decl = toR(23.45 * Math.sin(toR(360/365 * (284 + doy))));
-  const H    = toR((hour - 12) * 15);
-  const sinA = Math.sin(lat)*Math.sin(decl) + Math.cos(lat)*Math.cos(decl)*Math.cos(H);
-  const alt  = Math.asin(Math.max(-1, Math.min(1, sinA)));
-  const cosAz = (Math.sin(decl) - Math.sin(alt)*Math.sin(lat)) / (Math.cos(alt)*Math.cos(lat));
-  let az = toD(Math.acos(Math.max(-1, Math.min(1, cosAz))));
-  if (hour > 12) az = 360 - az;
-  return { alt: toD(alt), az, decl: toD(decl) };
+function solSR(lat,doy){
+  const la=toR(lat), de=toR(23.45*Math.sin(toR(360/365*(284+doy))));
+  const c=-Math.tan(la)*Math.tan(de);
+  if(c>1) return null; if(c<-1) return {r:0,s:24};
+  const H=Math.acos(c)*180/Math.PI/15;
+  return {r:12-H,s:12+H};
 }
 
-function sunriseSunset(lat_deg, doy) {
-  const lat  = toR(lat_deg);
-  const decl = toR(23.45 * Math.sin(toR(360/365 * (284 + doy))));
-  const cosH = -Math.tan(lat)*Math.tan(decl);
-  if (cosH > 1) return null;
-  if (cosH < -1) return { rise:0, set:24 };
-  const H = Math.acos(cosH) * 180/Math.PI / 15;
-  return { rise: 12-H, set: 12+H };
+function fmtH(h){ const hh=Math.floor(h),mm=Math.round((h-hh)*60); return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; }
+function azDir(az){ return ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'][Math.round(az/22.5)%16]; }
+
+function solCalc(){
+  const ds=$('sol-date').value; if(!ds) return;
+  const lat=parseFloat($('sol-lat').value)||34.9;
+  const hem=parseFloat($('sol-hem').value);
+  const latA=Math.abs(lat)*hem;
+  const hour=parseFloat($('sol-hour').value);
+  const objH=parseFloat($('sol-obj').value)||6;
+  const winH=parseFloat($('sol-win').value)||1.2;
+  const vol=parseFloat($('sol-vol').value)||0.6;
+  const doy=dayOfYear(ds);
+  const yr=new Date().getFullYear();
+  const doyV=dayOfYear(`${yr}-${hem<0?'12-21':'06-21'}`);
+  const doyI=dayOfYear(`${yr}-${hem<0?'06-21':'12-21'}`);
+  const doyE=dayOfYear(`${yr}-03-21`);
+
+  const pos=solPos(latA,doy,hour);
+  const posV=solPos(latA,doyV,12);
+  const posI=solPos(latA,doyI,12);
+  const sr=solSR(latA,doy);
+
+  // Salida/puesta
+  $('sol-sr').innerHTML=sr?`<b>${fmtH(sr.r)}</b> — <b>${fmtH(sr.s)}</b>`:'—';
+
+  // Posición
+  const posHtml=pos.alt>0
+    ? `α = <b>${pos.alt.toFixed(1)}°</b> &nbsp; az = <b>${pos.az.toFixed(0)}° ${azDir(pos.az)}</b><br>
+       Verano mediodía: ${posV.alt.toFixed(1)}° &nbsp; Invierno: ${posI.alt.toFixed(1)}°`
+    : 'Sol bajo el horizonte';
+  $('sol-pos').innerHTML=posHtml;
+
+  // Trayectoria
+  $('sol-tray').innerHTML=solTray(latA,doy,hour,doyV,doyI,doyE);
+
+  // Sombras
+  solShad(pos,objH);
+
+  // Protección
+  solProt(posV,posI,pos,winH,vol);
 }
 
-function fmtH(h) {
-  const hh = Math.floor(h), mm = Math.round((h-hh)*60);
-  return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-}
-
-function azDir(az) {
-  return ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'][Math.round(az/22.5)%16];
-}
-
-function calcSolar() {
-  const dateStr = document.getElementById('sol-date').value;
-  if (!dateStr) return;
-  const lat  = parseFloat(document.getElementById('sol-lat').value) || 34.9;
-  const hem  = parseFloat(document.getElementById('sol-hem').value);
-  const latA = Math.abs(lat) * hem;
-  const hour = parseFloat(solHour.value);
-  const objH = parseFloat(document.getElementById('sol-obj-h').value) || 6;
-  const vol  = parseFloat(document.getElementById('sol-vol').value)   || 0.6;
-  const winH = parseFloat(document.getElementById('sol-win-h').value) || 1.2;
-  const doy  = dayOfYear(dateStr);
-  const yr   = new Date().getFullYear();
-
-  const pos  = solarPos(latA, doy, hour);
-  const sr   = sunriseSunset(latA, doy);
-
-  // Solsticios e equinoccio
-  const doyV = dayOfYear(`${yr}-${hem<0?'12-21':'06-21'}`);
-  const doyI = dayOfYear(`${yr}-${hem<0?'06-21':'12-21'}`);
-  const doyE = dayOfYear(`${yr}-03-21`);
-  const posV = solarPos(latA, doyV, 12); // mediodía verano
-  const posI = solarPos(latA, doyI, 12); // mediodía invierno
-  const posE = solarPos(latA, doyE, 12); // mediodía equinoccio
-
-  // ── Salida/puesta ──
-  document.getElementById('sol-sr').innerHTML = sr
-    ? `Salida: <b>${fmtH(sr.rise)}</b><br>Puesta: <b>${fmtH(sr.set)}</b>`
-    : '—';
-
-  // ── Posición actual ──
-  const posTable = pos.alt > 0
-    ? `<table style="border-collapse:collapse;width:100%;font-size:10px;">
-        <tr><td style="padding:2px 5px;border:1px solid #ddd;font-weight:bold;">Altitud α</td>
-            <td style="padding:2px 5px;border:1px solid #ddd;font-family:'Courier New',monospace;color:#cc0000;font-weight:bold;">${pos.alt.toFixed(1)}°</td></tr>
-        <tr><td style="padding:2px 5px;border:1px solid #ddd;font-weight:bold;">Azimut</td>
-            <td style="padding:2px 5px;border:1px solid #ddd;font-family:'Courier New',monospace;">${pos.az.toFixed(1)}° ${azDir(pos.az)}</td></tr>
-        <tr style="background:#fff8ee;"><td style="padding:2px 5px;border:1px solid #ddd;color:#c47c10;font-weight:bold;">α verano</td>
-            <td style="padding:2px 5px;border:1px solid #ddd;font-family:'Courier New',monospace;">${posV.alt.toFixed(1)}°</td></tr>
-        <tr><td style="padding:2px 5px;border:1px solid #ddd;font-weight:bold;">α equinoccio</td>
-            <td style="padding:2px 5px;border:1px solid #ddd;font-family:'Courier New',monospace;">${posE.alt.toFixed(1)}°</td></tr>
-        <tr style="background:#eeeeff;"><td style="padding:2px 5px;border:1px solid #ddd;color:#000080;font-weight:bold;">α invierno</td>
-            <td style="padding:2px 5px;border:1px solid #ddd;font-family:'Courier New',monospace;">${posI.alt.toFixed(1)}°</td></tr>
-       </table>`
-    : `<span style="color:#999;font-size:10px;">Sol bajo el horizonte</span>`;
-  document.getElementById('sol-pos-table').innerHTML = posTable;
-
-  // ── Diagrama trayectoria ──
-  document.getElementById('sol-diagram-wrap').innerHTML = buildTrajectory(latA, doy, hour);
-
-  // ── Sombras ──
-  buildShadow(pos, objH, doy, latA);
-
-  // ── Voladizo ──
-  buildVoladizo(posV, posI, pos, winH, vol);
-}
-
-// ─────────────────────────────────────────────
-//  DIAGRAMA TRAYECTORIA — proyección estereográfica simplificada
-// ─────────────────────────────────────────────
-function buildTrajectory(lat, doy, hour) {
-  const W = 320, H = 220, cx = W/2, cy = H/2 + 20, R = 90;
-  const yr = new Date().getFullYear();
-  const doyV = dayOfYear(`${yr}-${lat<0?'12-21':'06-21'}`);
-  const doyI = dayOfYear(`${yr}-${lat<0?'06-21':'12-21'}`);
-  const doyE = dayOfYear(`${yr}-03-21`);
-
-  // Proyección: el punto del sol en la esfera celeste
-  // x = R * cos(alt) * sin(az-180) + cx  (E-O)
-  // y = cy - R * cos(alt) * cos(az-180)  (N-S invertido)
-  // pero solo mostramos la parte sobre horizonte
-  function project(p) {
-    if (p.alt <= 0) return null;
-    const altR = toR(p.alt), azR = toR(p.az - 180);
-    const r = R * Math.cos(altR); // distancia desde centro = altitud proyectada
-    return {
-      x: cx + r * Math.sin(azR),
-      y: cy - r * Math.cos(azR)
-    };
+function solTray(lat,doy,hour,doyV,doyI,doyE){
+  const W=280,H=240,cx=W/2,cy=H/2+16,R=96;
+  function proj(lat,doyD,h){
+    const p=solPos(lat,doyD,h); if(p.alt<=0) return null;
+    const ar=toR(p.alt), azr=toR(p.az-180);
+    const r=R*Math.cos(ar);
+    return {x:cx+r*Math.sin(azr), y:cy-r*Math.cos(azr)};
   }
-
-  function arcPts(doyD) {
-    const pts = [];
-    for (let h = 4.5; h <= 19.5; h += 0.25) {
-      const p = solarPos(lat, doyD, h);
-      const pt = project(p);
-      if (pt) pts.push(pt);
+  function arc(doyD,color,dash,w){
+    const pts=[];
+    for(let h=4.5;h<=19.5;h+=0.2){
+      const p=proj(lat,doyD,h); if(p) pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
     }
-    return pts;
+    if(pts.length<2) return '';
+    const da=dash?`stroke-dasharray="${dash}"`:'';
+    return `<path d="M ${pts.join(' L ')}" stroke="${color}" stroke-width="${w||1.5}" fill="none" ${da} opacity="0.85"/>`;
   }
-
-  function ptsToPath(pts) {
-    if (!pts.length) return '';
-    return 'M ' + pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L ');
-  }
-
-  const ptsV = arcPts(doyV);
-  const ptsI = arcPts(doyI);
-  const ptsE = arcPts(doyE);
-  const curPos = project(solarPos(lat, doy, hour));
-
-  // Círculos de altitud (10°, 30°, 60°)
-  const altCircles = [10, 30, 60, 80].map(a => {
-    const r = R * Math.cos(toR(a));
-    return `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" stroke="#dddddd" stroke-width="0.5" fill="none"/>
-            <text x="${cx+r+2}" y="${cy+3}" fill="#aaa" font-size="7" font-family="Arial">${a}°</text>`;
+  // Marcadores de hora
+  let hmarks='';
+  [6,9,12,15,18].forEach(h=>{
+    const p=proj(lat,doy,h); if(!p) return;
+    hmarks+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2" fill="var(--rj)" opacity="0.5"/>
+             <text x="${(p.x+3).toFixed(1)}" y="${(p.y-2).toFixed(1)}" fill="var(--rj)" font-size="7" font-family="IBM Plex Mono,monospace">${h}h</text>`;
+  });
+  // Punto actual
+  const cur=proj(lat,doy,hour);
+  const dot=cur?`<circle cx="${cur.x.toFixed(1)}" cy="${cur.y.toFixed(1)}" r="6" fill="var(--rj)" opacity="0.9"/>
+                 <circle cx="${cur.x.toFixed(1)}" cy="${cur.y.toFixed(1)}" r="2" fill="white"/>`:'' ;
+  // Círculos de altitud
+  const altc=[10,30,60].map(a=>{
+    const r=R*Math.cos(toR(a));
+    return `<circle cx="${cx}" cy="${cy}" r="${r.toFixed(1)}" stroke="#ccc" stroke-width="0.5" fill="none"/>
+            <text x="${cx+r+2}" y="${cy+3}" fill="#bbb" font-size="7" font-family="IBM Plex Mono,monospace">${a}°</text>`;
   }).join('');
-
-  // Líneas cardinales
-  const cardinals = [
-    { az:0,   label:'N' }, { az:90,  label:'E' },
-    { az:180, label:'S' }, { az:270, label:'O' }
-  ];
-  const cardLines = cardinals.map(c => {
-    const azR = toR(c.az - 180);
-    const ex = cx + (R+12) * Math.sin(azR);
-    const ey = cy - (R+12) * Math.cos(azR);
-    return `<line x1="${cx}" y1="${cy}" x2="${(cx + R*Math.sin(azR)).toFixed(1)}" y2="${(cy - R*Math.cos(azR)).toFixed(1)}" stroke="#eeeeee" stroke-width="0.5"/>
-            <text x="${ex.toFixed(1)}" y="${(ey+3).toFixed(1)}" fill="#888" font-size="9" font-family="Arial" text-anchor="middle" font-weight="bold">${c.label}</text>`;
+  // Cardinales
+  const cards=['N','E','S','O'].map((l,i)=>{
+    const azr=toR(i*90-180);
+    const ex=cx+(R+12)*Math.sin(azr), ey=cy-(R+12)*Math.cos(azr);
+    return `<text x="${ex.toFixed(1)}" y="${(ey+3).toFixed(1)}" fill="var(--t3)" font-size="9" font-family="IBM Plex Sans Condensed,sans-serif" font-weight="600" text-anchor="middle">${l}</text>`;
   }).join('');
-
-  // Horas en la trayectoria del día actual
-  const hourMarks = [6,9,12,15,18].map(h => {
-    const p = project(solarPos(lat, doy, h));
-    if (!p) return '';
-    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2" fill="#cc0000" opacity="0.6"/>
-            <text x="${(p.x+3).toFixed(1)}" y="${(p.y-2).toFixed(1)}" fill="#cc0000" font-size="7" font-family="Arial">${h}h</text>`;
-  }).join('');
-
-  const dot = curPos
-    ? `<circle cx="${curPos.x.toFixed(1)}" cy="${curPos.y.toFixed(1)}" r="6" fill="#cc0000" opacity="0.9"/>
-       <circle cx="${curPos.x.toFixed(1)}" cy="${curPos.y.toFixed(1)}" r="2" fill="white"/>`
-    : '';
 
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="${W}" height="${H}" fill="#f8f8f8"/>
-    <!-- horizonte -->
-    <circle cx="${cx}" cy="${cy}" r="${R}" stroke="#999" stroke-width="1.5" fill="white"/>
-    ${altCircles}
-    ${cardLines}
-    <!-- trayectorias -->
-    ${ptsI.length ? `<path d="${ptsToPath(ptsI)}" stroke="#000080" stroke-width="1.5" fill="none" opacity="0.7"/>` : ''}
-    ${ptsE.length ? `<path d="${ptsToPath(ptsE)}" stroke="#888888" stroke-width="1" fill="none" stroke-dasharray="4,2" opacity="0.7"/>` : ''}
-    ${ptsV.length ? `<path d="${ptsToPath(ptsV)}" stroke="#c47c10" stroke-width="1.5" fill="none" opacity="0.8"/>` : ''}
-    ${hourMarks}
+    <rect width="${W}" height="${H}" fill="var(--p2)" rx="1"/>
+    <circle cx="${cx}" cy="${cy}" r="${R}" stroke="var(--t3)" stroke-width="1" fill="var(--p)"/>
+    ${altc}
+    ${cards}
+    ${arc(doyI,'var(--az)','6,3',1.2)}
+    ${arc(doyE,'var(--t3)','4,2',1)}
+    ${arc(doyV,'#c47c10','',1.5)}
+    ${arc(doy,'var(--rj)','2,2',1)}
+    ${hmarks}
     ${dot}
-    <text x="4" y="12" fill="#000080" font-size="9" font-family="Arial" font-weight="bold">Proyección polar — hemisferio ${lat<0?'sur':'norte'}</text>
-    <text x="4" y="22" fill="#666" font-size="8" font-family="Arial">centro = cénit · borde = horizonte</text>
   </svg>`;
 }
 
-// ─────────────────────────────────────────────
-//  SOMBRAS — sección con objeto y sombra
-// ─────────────────────────────────────────────
-function buildShadow(pos, objH, doy, lat) {
-  const W = 280, H = 160, pad = 20;
-  const sc = Math.min((H - pad*2) / objH, 18); // px/m
-  const objPx = objH * sc;
-  const baseY = H - pad;
-  const objX  = pad + 30;
+function solShad(pos,objH){
+  const W=260,H=160;
+  const padL=40,padR=14,padT=14,padB=32;
+  const baseY=H-padB, objX=padL+14;
 
-  let shadowSVG = '', resultTxt = '';
-
-  if (pos.alt <= 0.5) {
-    shadowSVG = `<text x="${W/2}" y="${H/2}" fill="#999" font-size="10" font-family="Arial" text-anchor="middle">Sol bajo el horizonte</text>`;
-    resultTxt = '—';
-  } else {
-    const altR   = toR(pos.alt);
-    const sombraM = objH / Math.tan(altR);
-    const sombraPx = Math.min(sombraM * sc, W - objX - pad);
-
-    // rayo solar
-    const rayLen = 70;
-    const rx2 = objX, ry2 = baseY - objPx;
-    const rx1 = rx2 - rayLen * Math.cos(altR);
-    const ry1 = ry2 + rayLen * Math.sin(altR);
-
-    shadowSVG = `
-      <!-- suelo -->
-      <line x1="${pad}" y1="${baseY}" x2="${W-pad}" y2="${baseY}" stroke="#999" stroke-width="1"/>
-      <!-- objeto -->
-      <rect x="${objX-3}" y="${baseY-objPx}" width="6" height="${objPx}" fill="#555"/>
-      <rect x="${objX-8}" y="${baseY-objPx-4}" width="16" height="4" fill="#444"/>
-      <!-- sombra -->
-      <rect x="${objX}" y="${baseY-2}" width="${sombraPx}" height="3" fill="#cccccc" opacity="0.8"/>
-      <line x1="${objX}" y1="${baseY}" x2="${objX+sombraPx}" y2="${baseY}" stroke="#999" stroke-width="1" stroke-dasharray="3,2"/>
-      <!-- rayo solar -->
-      <line x1="${rx1.toFixed(1)}" y1="${ry1.toFixed(1)}" x2="${rx2}" y2="${ry2}" stroke="#c47c10" stroke-width="1.5"/>
-      <polygon points="${rx2},${ry2} ${rx2+4},${ry2+6} ${rx2-4},${ry2+6}" fill="#c47c10"/>
-      <!-- cota sombra -->
-      <line x1="${objX}" y1="${baseY+10}" x2="${objX+sombraPx}" y2="${baseY+10}" stroke="#cc0000" stroke-width="1"/>
-      <line x1="${objX}" y1="${baseY+7}" x2="${objX}" y2="${baseY+13}" stroke="#cc0000" stroke-width="1"/>
-      <line x1="${objX+sombraPx}" y1="${baseY+7}" x2="${objX+sombraPx}" y2="${baseY+13}" stroke="#cc0000" stroke-width="1"/>
-      <text x="${objX + sombraPx/2 - 15}" y="${baseY+22}" fill="#cc0000" font-size="9" font-family="Arial">${sombraM.toFixed(2)} m</text>
-      <!-- cota altura -->
-      <line x1="${objX-14}" y1="${baseY}" x2="${objX-14}" y2="${baseY-objPx}" stroke="#cc0000" stroke-width="1"/>
-      <text x="${objX-30}" y="${baseY-objPx/2+4}" fill="#cc0000" font-size="9" font-family="Arial">${objH}m</text>
-      <!-- ángulo -->
-      <text x="${rx1.toFixed(1)}" y="${(ry1-4).toFixed(1)}" fill="#c47c10" font-size="8" font-family="Arial">α=${pos.alt.toFixed(0)}°</text>`;
-
-    resultTxt = `Sombra: <b>${sombraM.toFixed(2)} m</b> &nbsp;·&nbsp; α=${pos.alt.toFixed(1)}°`;
+  if(pos.alt<=0.5){
+    $('sol-shad-svg').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;" fill="none"><rect width="${W}" height="${H}" fill="var(--p2)"/><text x="${W/2}" y="${H/2+4}" fill="var(--t3)" font-size="10" font-family="Arial" text-anchor="middle">Sol bajo el horizonte</text></svg>`;
+    $('sol-shad-txt').innerHTML='—'; return;
   }
+  const altR=toR(pos.alt);
+  const somM=objH/Math.tan(altR);
+  const drawW=W-padL-padR;
+  const drawH=H-padT-padB;
+  const sc=Math.min(drawW/(somM+1.5), drawH/objH, 22);
+  const objPx=objH*sc;
+  const somPx=Math.min(somM*sc, drawW-4);
+  const topY=baseY-objPx;
+  // Rayo viene de la derecha (norte en HS)
+  const rLen=55;
+  const rx1=objX+rLen*Math.cos(altR), ry1=topY+rLen*Math.sin(altR);
 
-  document.getElementById('sol-shadow-diagram').innerHTML =
-    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${W}" height="${H}" fill="#f8f8f8"/>${shadowSVG}
-    </svg>`;
-  document.getElementById('sol-shadow-result').innerHTML = resultTxt;
+  $('sol-shad-svg').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${W}" height="${H}" fill="var(--p2)"/>
+    <line x1="${padL-8}" y1="${baseY}" x2="${W-padR}" y2="${baseY}" stroke="var(--t3)" stroke-width="1.5"/>
+    <rect x="${objX-4}" y="${topY}" width="8" height="${objPx}" fill="var(--t2)"/>
+    <rect x="${objX-6}" y="${topY-4}" width="12" height="5" fill="var(--t)"/>
+    <line x1="${objX}" y1="${baseY}" x2="${objX+somPx}" y2="${baseY}" stroke="var(--t)" stroke-width="3" opacity="0.18"/>
+    <line x1="${rx1.toFixed(1)}" y1="${ry1.toFixed(1)}" x2="${objX}" y2="${topY}" stroke="#c47c10" stroke-width="1.5"/>
+    <circle cx="${objX}" cy="${topY}" r="2.5" fill="#c47c10"/>
+    <line x1="${objX}" y1="${baseY+10}" x2="${objX+somPx}" y2="${baseY+10}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${objX}" y1="${baseY+7}" x2="${objX}" y2="${baseY+13}" stroke="var(--rj)" stroke-width="0.8"/>
+    <line x1="${objX+somPx}" y1="${baseY+7}" x2="${objX+somPx}" y2="${baseY+13}" stroke="var(--rj)" stroke-width="0.8"/>
+    <text x="${objX+somPx/2}" y="${baseY+23}" fill="var(--rj)" font-size="9" font-family="IBM Plex Mono,monospace" text-anchor="middle">${somM.toFixed(2)} m</text>
+    <line x1="${padL-4}" y1="${baseY}" x2="${padL-4}" y2="${topY}" stroke="var(--t3)" stroke-width="0.8"/>
+    <line x1="${padL-8}" y1="${baseY}" x2="${padL}" y2="${baseY}" stroke="var(--t3)" stroke-width="0.8"/>
+    <line x1="${padL-8}" y1="${topY}" x2="${padL}" y2="${topY}" stroke="var(--t3)" stroke-width="0.8"/>
+    <text x="${padL-6}" y="${(baseY+topY)/2+3}" fill="var(--t3)" font-size="8" font-family="IBM Plex Mono,monospace" text-anchor="end">${objH}m</text>
+    <text x="${rx1+2}" y="${ry1-3}" fill="#c47c10" font-size="8" font-family="IBM Plex Mono,monospace">α ${pos.alt.toFixed(0)}°</text>
+  </svg>`;
+  $('sol-shad-txt').innerHTML=`Sombra: <b>${somM.toFixed(2)} m</b>`;
 }
 
-// ─────────────────────────────────────────────
-//  VOLADIZO — sección constructiva
-// ─────────────────────────────────────────────
-function buildVoladizo(posV, posI, posCurr, winH, vol) {
-  const W = 280, H = 200, sc = 40; // px/m
-  const pad = 20;
-  const wallX  = pad + 20;
-  const wallH  = 4.5 * sc; // altura de pared referencial
-  const baseY  = H - pad;
-  const wallTopY = baseY - wallH;
+function solProt(posV,posI,posCurr,winH,vol){
+  const W=260,H=210;
+  const padL=46,padR=74,padT=40,padB=26;
+  const sc=34;
+  const baseY=H-padB;
+  const wallX=padL+12;
+  const wallHm=2.8;
+  const wallTopY=baseY-wallHm*sc;
+  const volPx=Math.min(vol*sc, W-wallX-padR-2);
+  const tipX=wallX+volPx, tipY=wallTopY-4;
+  const winBotY=baseY-0.85*sc;
+  const winTopY=winBotY-winH*sc;
+  const altVR=toR(posV.alt), altIR=toR(posI.alt);
+  const volNec=winH/Math.tan(altVR);
+  const cubre=vol>=volNec*0.95;
 
-  const volPx  = vol  * sc;
-  const winHpx = winH * sc;
-  const winBotY = baseY - 0.8 * sc; // ventana empieza a 0.8m del suelo
-  const winTopY = winBotY - winHpx;
-
-  // voladizo necesario para bloquear verano
-  const altVR = toR(posV.alt);
-  const altIR = toR(posI.alt);
-  const altCR = toR(posCurr.alt);
-  const volNec = winH / Math.tan(altVR);
-  const cubre = vol >= volNec * 0.95;
-
-  // Rayos: desde el borde del voladizo hacia abajo
-  function rayFrom(altRad, color, dash) {
-    const tipX = wallX + volPx, tipY = wallTopY;
-    const len = 120;
-    const ex = tipX - len * Math.cos(altRad);
-    const ey = tipY + len * Math.sin(altRad);
-    // punto donde el rayo toca la pared (x=wallX)
-    const t = (tipX - wallX) / Math.cos(altRad);
-    const hitY = tipY + t * Math.sin(altRad);
-    const dashAttr = dash ? `stroke-dasharray="${dash}"` : '';
-    return `<line x1="${ex.toFixed(1)}" y1="${ey.toFixed(1)}" x2="${tipX}" y2="${tipY}" stroke="${color}" stroke-width="1.5" ${dashAttr} opacity="0.85"/>
-            <line x1="${tipX}" y1="${tipY}" x2="${wallX}" y2="${hitY.toFixed(1)}" stroke="${color}" stroke-width="1" ${dashAttr} opacity="0.5"/>`;
+  function ray(altRad,color,dash){
+    if(altRad<=0.01) return '';
+    const da=dash?`stroke-dasharray="${dash}"`:'';
+    const len=58;
+    const sx=tipX+len*Math.cos(altRad), sy=tipY+len*Math.sin(altRad);
+    const hitY=Math.min(tipY+(tipX-wallX)*Math.tan(altRad), baseY);
+    return `<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${tipX}" y2="${tipY}" stroke="${color}" stroke-width="1.5" ${da}/>
+            <line x1="${tipX}" y1="${tipY}" x2="${wallX}" y2="${hitY.toFixed(1)}" stroke="${color}" stroke-width="0.9" ${da} opacity="0.5"/>
+            <circle cx="${tipX}" cy="${tipY}" r="2" fill="${color}"/>`;
   }
 
-  const rayV = rayFrom(altVR, '#c47c10', '');
-  const rayI = rayFrom(altIR, '#000080', '4,2');
-  const rayCurr = posCurr.alt > 0 ? rayFrom(altCR, '#cc0000', '2,2') : '';
+  // Hatch pared
+  let hatch='';
+  for(let y=wallTopY+8;y<baseY;y+=9){
+    hatch+=`<line x1="${wallX-14}" y1="${y}" x2="${Math.min(wallX,wallX-14+14)}" y2="${y-14}" stroke="#ccc" stroke-width="0.5"/>`;
+  }
 
-  const badge = cubre
-    ? `<text x="${wallX+volPx+4}" y="${wallTopY-6}" fill="green" font-size="8" font-family="Arial" font-weight="bold">✓ protege</text>`
-    : `<text x="${wallX+volPx+4}" y="${wallTopY-6}" fill="#cc0000" font-size="8" font-family="Arial" font-weight="bold">✗ insuf.</text>`;
+  const badgeTxt=cubre?'✓ protege verano':'✗ alero insuficiente';
+  const badgeCol=cubre?'var(--vr)':'var(--rj)';
+  const lR=W-padR+8;
 
-  const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="${W}" height="${H}" fill="#f8f8f8"/>
-    <!-- suelo -->
-    <line x1="${pad}" y1="${baseY}" x2="${W-pad}" y2="${baseY}" stroke="#999" stroke-width="1"/>
-    <!-- pared -->
-    <rect x="${wallX-8}" y="${wallTopY}" width="8" height="${wallH}" fill="#aaaaaa" stroke="#666" stroke-width="0.5"/>
-    <!-- ventana -->
-    <rect x="${wallX-8}" y="${winTopY}" width="8" height="${winHpx}" fill="#bbddff" stroke="#2a6090" stroke-width="1"/>
-    <!-- voladizo -->
-    <rect x="${wallX}" y="${wallTopY-4}" width="${volPx}" height="5" fill="#2a6090" stroke="#000080" stroke-width="0.5"/>
-    ${badge}
-    <!-- rayos -->
-    ${rayV}
-    ${rayI}
-    ${rayCurr}
-    <!-- cota voladizo -->
-    <line x1="${wallX}" y1="${wallTopY-14}" x2="${wallX+volPx}" y2="${wallTopY-14}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${wallX}" y1="${wallTopY-18}" x2="${wallX}" y2="${wallTopY-10}" stroke="#cc0000" stroke-width="1"/>
-    <line x1="${wallX+volPx}" y1="${wallTopY-18}" x2="${wallX+volPx}" y2="${wallTopY-10}" stroke="#cc0000" stroke-width="1"/>
-    <text x="${wallX+volPx/2-10}" y="${wallTopY-18}" fill="#cc0000" font-size="8" font-family="Arial">${vol}m</text>
-    <!-- cota ventana -->
-    <line x1="${wallX-20}" y1="${winTopY}" x2="${wallX-20}" y2="${winBotY}" stroke="#2a6090" stroke-width="1"/>
-    <text x="${wallX-36}" y="${winTopY+winHpx/2+3}" fill="#2a6090" font-size="8" font-family="Arial">${winH}m</text>
-    <!-- leyenda -->
-    <line x1="${W-80}" y1="12" x2="${W-65}" y2="12" stroke="#c47c10" stroke-width="1.5"/>
-    <text x="${W-62}" y="15" fill="#c47c10" font-size="8" font-family="Arial">verano ${posV.alt.toFixed(0)}°</text>
-    <line x1="${W-80}" y1="24" x2="${W-65}" y2="24" stroke="#000080" stroke-width="1.5" stroke-dasharray="4,2"/>
-    <text x="${W-62}" y="27" fill="#000080" font-size="8" font-family="Arial">invierno ${posI.alt.toFixed(0)}°</text>
-    ${posCurr.alt>0 ? `<line x1="${W-80}" y1="36" x2="${W-65}" y2="36" stroke="#cc0000" stroke-width="1.5" stroke-dasharray="2,2"/>
-    <text x="${W-62}" y="39" fill="#cc0000" font-size="8" font-family="Arial">ahora ${posCurr.alt.toFixed(0)}°</text>` : ''}
+  $('sol-prot-svg').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${W}" height="${H}" fill="var(--p2)"/>
+    <line x1="${padL-8}" y1="${baseY}" x2="${W-padR+20}" y2="${baseY}" stroke="var(--t3)" stroke-width="1.5"/>
+    <rect x="${wallX-14}" y="${wallTopY}" width="14" height="${wallHm*sc}" fill="#e0e0d8" stroke="var(--t2)" stroke-width="1"/>
+    ${hatch}
+    <rect x="${wallX-14}" y="${winTopY}" width="14" height="${winH*sc}" fill="#c8dcf0" stroke="var(--az2)" stroke-width="1.5"/>
+    <line x1="${wallX-14}" y1="${winTopY+winH*sc/2}" x2="${wallX}" y2="${winTopY+winH*sc/2}" stroke="var(--az2)" stroke-width="0.6"/>
+    <rect x="${wallX}" y="${wallTopY-5}" width="${volPx}" height="6" fill="var(--t2)" stroke="var(--t)" stroke-width="0.8"/>
+    ${ray(altVR,'#c47c10','')}
+    ${ray(altIR,'var(--az)','5,3')}
+    ${posCurr.alt>1?ray(toR(posCurr.alt),'var(--rj)','2,2'):''}
+    <line x1="${wallX}" y1="${wallTopY-17}" x2="${tipX}" y2="${wallTopY-17}" stroke="var(--t2)" stroke-width="0.8"/>
+    <line x1="${wallX}" y1="${wallTopY-21}" x2="${wallX}" y2="${wallTopY-13}" stroke="var(--t2)" stroke-width="0.8"/>
+    <line x1="${tipX}" y1="${wallTopY-21}" x2="${tipX}" y2="${wallTopY-13}" stroke="var(--t2)" stroke-width="0.8"/>
+    <text x="${wallX+volPx/2}" y="${wallTopY-23}" fill="var(--t2)" font-size="8" font-family="IBM Plex Mono,monospace" text-anchor="middle">${vol}m</text>
+    <line x1="${padL-6}" y1="${winTopY}" x2="${padL-6}" y2="${winBotY}" stroke="var(--az2)" stroke-width="0.8"/>
+    <line x1="${padL-10}" y1="${winTopY}" x2="${padL-2}" y2="${winTopY}" stroke="var(--az2)" stroke-width="0.8"/>
+    <line x1="${padL-10}" y1="${winBotY}" x2="${padL-2}" y2="${winBotY}" stroke="var(--az2)" stroke-width="0.8"/>
+    <text x="${padL-8}" y="${(winTopY+winBotY)/2+3}" fill="var(--az2)" font-size="8" font-family="IBM Plex Mono,monospace" text-anchor="end">${winH}m</text>
+    <text x="${wallX+volPx/2}" y="${wallTopY-33}" fill="${badgeCol}" font-size="8" font-family="IBM Plex Sans Condensed,sans-serif" font-weight="700" text-anchor="middle">${badgeTxt}</text>
+    <line x1="${lR}" y1="${padT-22}" x2="${lR+14}" y2="${padT-22}" stroke="#c47c10" stroke-width="1.5"/>
+    <text x="${lR+17}" y="${padT-19}" fill="#c47c10" font-size="7" font-family="IBM Plex Mono,monospace">V ${posV.alt.toFixed(0)}°</text>
+    <line x1="${lR}" y1="${padT-12}" x2="${lR+14}" y2="${padT-12}" stroke="var(--az)" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="${lR+17}" y="${padT-9}" fill="var(--az)" font-size="7" font-family="IBM Plex Mono,monospace">I ${posI.alt.toFixed(0)}°</text>
+    ${posCurr.alt>1?`<line x1="${lR}" y1="${padT-2}" x2="${lR+14}" y2="${padT-2}" stroke="var(--rj)" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="${lR+17}" y="${padT+1}" fill="var(--rj)" font-size="7" font-family="IBM Plex Mono,monospace">↑ ${posCurr.alt.toFixed(0)}°</text>`:''}
+    <text x="${W-padR+14}" y="${H-padB+14}" fill="var(--t3)" font-size="7" font-family="IBM Plex Mono,monospace">← norte</text>
   </svg>`;
 
-  document.getElementById('sol-prot-diagram').innerHTML = svg;
-  document.getElementById('sol-prot-result').innerHTML =
-    `Voladizo necesario: <b>${volNec.toFixed(2)} m</b><br>
-     Voladizo actual: <b>${vol} m</b> &nbsp;
-     <span class="status-badge ${cubre?'status-ok':'status-bad'}">${cubre?'Protege':'Insuficiente'}</span>`;
+  $('sol-prot-txt').innerHTML=`Alero necesario: <b>${volNec.toFixed(2)} m</b> · actual: <b>${vol} m</b> <span class="badge ${cubre?'ok':'bad'}">${cubre?'OK':'Insuficiente'}</span>`;
 }
 
-// init solar
-updateHourLabel();
-calcSolar();
+solHlbl(); solCalc();
 </script>
 </body>
 </html>
