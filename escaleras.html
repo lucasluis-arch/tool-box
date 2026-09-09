@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=780"/>
+  <title>Escaleras — ARQ'TOYBOX</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23ffffff'/><polyline points='6,26 6,6 26,6' stroke='%23000080' stroke-width='3.5' fill='none' stroke-linecap='square'/><line x1='6' y1='26' x2='26' y2='6' stroke='%23cc0000' stroke-width='1.5' stroke-dasharray='3,2'/></svg>"/>
+  <style>
+    /* ── BLONDEL PANEL ── */
+    .blondel-panel {
+      border: 2px solid #999999;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .blondel-semaforo {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 2px solid #999999;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .sem-ok   { background: #ccffcc; border-color: #006600; }
+    .sem-lim  { background: #ffffcc; border-color: #886600; }
+    .sem-bad  { background: #ffcccc; border-color: #cc0000; }
+    .blondel-info { flex: 1; font-size: 12px; }
+    .blondel-val  {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 28px; font-weight: bold; color: #000000;
+    }
+    .blondel-formula {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px; color: #555555; margin-top: 2px;
+    }
+    .blondel-rango {
+      font-size: 11px; color: #555555; margin-top: 2px;
+    }
+
+    /* ── RANGOS IDEALES ── */
+    .rangos-bar {
+      margin-bottom: 14px;
+    }
+    .rangos-bar table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+    }
+    .rangos-bar td {
+      padding: 4px 8px; border: 1px solid #cccccc;
+      text-align: center;
+    }
+    .rangos-bar .lbl { background: #f0f0f0; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 1px; color: #555555; }
+    .rangos-bar .val { font-family: "Courier New", Courier, monospace;
+      font-weight: bold; }
+    .val-ok  { background: #ccffcc; }
+    .val-lim { background: #ffffcc; }
+    .val-bad { background: #ffcccc; }
+
+    /* ── TIPO ESCALERA ── */
+    .tipo-btn {
+      background: #eeeeee; border: 1px solid #999999;
+      font-size: 12px; padding: 5px 14px; cursor: pointer;
+      margin-right: 4px; font-family: Arial, sans-serif;
+    }
+    .tipo-btn.active { background: #000080; color: #ffffff; border-color: #000080; }
+
+    /* ── TABLA ALTERNATIVAS ── */
+    .alt-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+    .alt-table th { background: #000080; color: #ffffff;
+      padding: 3px 6px; text-align: left; font-weight: normal;
+      font-size: 10px; letter-spacing: 1px; }
+    .alt-table td { padding: 3px 6px; border-bottom: 1px solid #eeeeee;
+      font-family: "Courier New", Courier, monospace; }
+    .alt-table tr.sel td { background: #ffffcc; font-weight: bold; }
+    .alt-table tr:hover td { background: #f0f0ff; cursor: pointer; }
+    .alt-table tr.sel:hover td { background: #ffffaa; }
+
+    /* ── DIAGRAMA CONTAINER ── */
+    .diag-wrap {
+      border: 1px solid #cccccc;
+      background: #ffffff;
+      padding: 8px;
+      overflow-x: auto;
+    }
+    .diag-wrap svg { display: block; }
+
+    /* ── INPUT COMPACTO en tabla ── */
+    .param-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    .param-table td { padding: 4px 6px; vertical-align: middle; }
+    .param-table td:first-child {
+      font-size: 11px; color: #444444; white-space: nowrap; width: 50%;
+    }
+    .param-table input, .param-table select {
+      width: 100%; font-family: "Courier New", Courier, monospace;
+      font-size: 13px; border: 1px solid #999999;
+      padding: 2px 4px; background: #ffffff;
+    }
+    .param-table .note { font-size: 10px; color: #888888; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="site-header">
+    <a href="index.html" class="site-title">ARQ'TOYBOX</a>
+    <div class="site-subtitle">Herramientas de arquitectura &mdash; Lucas &middot; FADU UDELAR</div>
+  </div>
+
+  <!-- NAV -->
+  <div class="site-nav">
+    <a href="index.html">Inicio</a> <span>|</span>
+    <a href="escalas.html">Escalas</a> <span>|</span>
+    <a href="escaleras.html" class="current">Escaleras</a> <span>|</span>
+    <a href="unidades.html">Unidades</a> <span>|</span>
+    <a href="secciones.html">Secciones</a> <span>|</span>
+    <a href="solar.html">Solar</a>
+  </div>
+
+  <hr/>
+  <div class="tool-title">[002] Calculadora de Escaleras</div>
+
+  <!-- BLONDEL SIEMPRE VISIBLE -->
+  <div class="blondel-panel" id="blondel-panel">
+    <div class="blondel-semaforo sem-bad" id="blondel-sem">?</div>
+    <div class="blondel-info">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#555555;margin-bottom:2px;">Regla de Blondel &mdash; 2ch + h</div>
+      <span class="blondel-val" id="blondel-val">&mdash;</span>
+      <span style="font-size:14px;color:#555555;"> cm</span>
+      <span id="blondel-badge" style="margin-left:8px;"></span>
+      <div class="blondel-formula" id="blondel-formula">Ingresá la altura a salvar para calcular</div>
+    </div>
+    <div style="font-size:11px;color:#555555;text-align:right;line-height:1.8;">
+      Rango cómodo<br/>
+      <b style="color:#006600;">60 &mdash; 65 cm</b><br/>
+      Óptimo: <b>63 cm</b>
+    </div>
+  </div>
+
+  <!-- CUERPO -->
+  <table class="tool-table">
+    <tr>
+
+      <!-- COLUMNA IZQUIERDA: PARÁMETROS -->
+      <td class="col-params" style="width:220px;">
+        <div class="col-heading">Parámetros</div>
+
+        <!-- Input principal -->
+        <div class="field" style="margin-bottom:14px;">
+          <label style="font-weight:bold; font-size:13px;">Altura a salvar</label>
+          <div class="input-big">
+            <input type="number" id="p-H" min="1" step="1" placeholder="270"
+              oninput="onInput()" style="font-size:22px;"/>
+          </div>
+          <div class="note">cm &mdash; único campo obligatorio</div>
+        </div>
+
+        <hr class="sep"/>
+
+        <!-- Tipo de escalera -->
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;color:#444444;margin-bottom:5px;">Tipo de escalera</div>
+          <button class="tipo-btn active" onclick="setTipo('recta',this)">Recta</button>
+          <button class="tipo-btn" onclick="setTipo('L',this)">En L</button>
+          <button class="tipo-btn" onclick="setTipo('U',this)">En U</button>
+        </div>
+
+        <hr class="sep"/>
+
+        <!-- Parámetros adicionales -->
+        <div style="font-size:11px;color:#444444;margin-bottom:6px;">Ajustes opcionales</div>
+        <table class="param-table">
+          <tr>
+            <td>Ancho de escalera</td>
+            <td><input type="number" id="p-ancho" value="100" min="60" step="5" oninput="onInput()"/><div class="note">cm</div></td>
+          </tr>
+          <tr>
+            <td>Desarrollo disponible</td>
+            <td><input type="number" id="p-D" placeholder="libre" min="1" step="1" oninput="onInput()"/><div class="note">cm (opcional)</div></td>
+          </tr>
+          <tr>
+            <td>Contrahuella objetivo</td>
+            <td><input type="number" id="p-ch" placeholder="17" min="12" max="22" step="0.5" oninput="onInput()"/><div class="note">cm (opcional)</div></td>
+          </tr>
+          <tr>
+            <td>Huella objetivo</td>
+            <td><input type="number" id="p-h" placeholder="libre" min="20" max="40" step="0.5" oninput="onInput()"/><div class="note">cm (opcional)</div></td>
+          </tr>
+          <tr>
+            <td>Blondel objetivo</td>
+            <td><input type="number" id="p-B" value="63" min="55" max="70" step="0.5" oninput="onInput()"/><div class="note">cm (default 63)</div></td>
+          </tr>
+        </table>
+
+        <hr class="sep"/>
+
+        <!-- Rangos de referencia -->
+        <div class="col-heading">Rangos ideales</div>
+        <div class="rangos-bar">
+          <table>
+            <tr>
+              <td class="lbl">Contrahuella</td>
+              <td class="lbl">Huella</td>
+              <td class="lbl">Ángulo</td>
+            </tr>
+            <tr>
+              <td class="val" id="ref-ch">&mdash;</td>
+              <td class="val" id="ref-h">&mdash;</td>
+              <td class="val" id="ref-ang">&mdash;</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Tabla de alternativas -->
+        <div class="col-heading">Alternativas</div>
+        <div id="alt-wrap">
+          <div style="font-size:11px;color:#aaaaaa;">Calculando...</div>
+        </div>
+      </td>
+
+      <!-- COLUMNA CENTRAL: RESULTADO + DIAGRAMAS -->
+      <td class="col-result">
+        <div class="col-heading">Solución óptima</div>
+
+        <!-- Resumen numérico -->
+        <div id="resumen" style="margin-bottom:14px;">
+          <div style="font-size:12px;color:#aaaaaa;">Ingresá la altura a salvar.</div>
+        </div>
+
+        <hr class="sep"/>
+
+        <!-- CORTE -->
+        <div class="col-heading">Corte longitudinal</div>
+        <div class="diag-wrap" id="wrap-corte">
+          <svg id="svg-corte" viewBox="0 0 500 220" width="500" height="220"
+            xmlns="http://www.w3.org/2000/svg" fill="none">
+            <text x="10" y="20" fill="#aaaaaa" font-family="Arial" font-size="12">
+              Ingresá la altura para ver el corte.
+            </text>
+          </svg>
+        </div>
+
+        <div style="height:14px;"></div>
+
+        <!-- PLANTA -->
+        <div class="col-heading">Planta</div>
+        <div class="diag-wrap" id="wrap-planta">
+          <svg id="svg-planta" viewBox="0 0 500 200" width="500" height="200"
+            xmlns="http://www.w3.org/2000/svg" fill="none">
+            <text x="10" y="20" fill="#aaaaaa" font-family="Arial" font-size="12">
+              Ingresá la altura para ver la planta.
+            </text>
+          </svg>
+        </div>
+      </td>
+
+      <!-- COLUMNA DERECHA: REFERENCIA -->
+      <td class="col-info">
+        <div class="col-heading">Referencia</div>
+
+        <div class="info-section">
+          <div class="info-title">Blondel</div>
+          <span class="formula">2ch + h = 63</span>
+          <div class="info-text">
+            Paso humano medio &#8776; 63&nbsp;cm.<br/>
+            <b style="color:#006600;">60&ndash;65</b>: cómoda<br/>
+            <b style="color:#886600;">58&ndash;60 / 65&ndash;67</b>: límite<br/>
+            <b style="color:#cc0000;">&lt;58 / &gt;67</b>: no cumple
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Contrahuella</div>
+          <div class="info-text">
+            Dim. vertical.<br/>
+            <b style="color:#006600;">16&ndash;18 cm</b> interior<br/>
+            <b style="color:#886600;">14&ndash;16 cm</b> exterior<br/>
+            <b style="color:#cc0000;">&gt;20 cm</b> no cumple
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Huella</div>
+          <div class="info-text">
+            Dim. horizontal.<br/>
+            <b style="color:#006600;">28&ndash;32 cm</b> ideal<br/>
+            <b style="color:#886600;">25&ndash;28 cm</b> mínimo<br/>
+            <b style="color:#cc0000;">&lt;25 cm</b> no cumple
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Ángulo</div>
+          <div class="info-text">
+            <b style="color:#006600;">28°&ndash;40°</b> confortable<br/>
+            <b style="color:#886600;">40°&ndash;45°</b> servicio<br/>
+            <b style="color:#cc0000;">&gt;45°</b> escalera fija
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Descanso</div>
+          <div class="info-text">
+            Ancho mínimo = ancho de escalera.<br/>
+            En L: 1 descanso.<br/>
+            En U: 2 descansos.
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Proyección H</div>
+          <span class="formula">(N&minus;1) &times; h</span>
+          <div class="info-text">
+            El último escalón coincide con el nivel de llegada y no genera huella en planta.
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Referencia</div>
+          <div class="info-text">
+            <b>Residencial:</b> ch17 h29<br/>
+            <b>Mínima:</b> ch18 h25<br/>
+            <b>Exterior:</b> ch14 h35<br/>
+            <b>Servicio:</b> ch20 h22
+          </div>
+        </div>
+      </td>
+
+    </tr>
+  </table>
+
+  <!-- ACORDEÓN DIDÁCTICO -->
+  <div class="didactic">
+    <button class="didactic-btn" onclick="toggleDidactic(this)">
+      <span>Cómo funciona Blondel, contrahuella, huella y ángulo &mdash; expandir</span>
+      <span>&#9660;</span>
+    </button>
+    <div class="didactic-body" id="didactic-body">
+      <div>
+        <div class="didactic-sub">La regla de Blondel</div>
+        <p>François Blondel (s. XVII) observó que el paso humano promedio al caminar en plano es ~63&nbsp;cm. En una escalera, cada paso sube una contrahuella y avanza una huella, pero también "recarga" la energía del sube. La fórmula <b>2ch&nbsp;+&nbsp;h&nbsp;=&nbsp;63</b> equilibra el esfuerzo horizontal y vertical. Un valor menor a 60 significa escalera muy tendida (huella grande, poco sube); mayor a 65 significa muy empinada.</p>
+        <div class="didactic-sub">Contrahuella (ch)</div>
+        <p>Es la dimensión vertical de cada escalón — cuánto sube el pie. El rango cómodo interior es <b>16 a 18&nbsp;cm</b>. Por encima de 20&nbsp;cm la rodilla tiene que subir demasiado y resulta fatigosa. Por debajo de 14&nbsp;cm se vuelve monótona y hay riesgo de tropiezo.</p>
+        <div class="didactic-sub">Huella (h)</div>
+        <p>Es la dimensión horizontal donde apoya el pie. Debe ser suficiente para que el pie descanse completo. El mínimo reglamentario suele ser 25&nbsp;cm; el rango cómodo es <b>28 a 32&nbsp;cm</b>. Una huella muy grande combinada con contrahuella pequeña produce la escalera "plana" que cansa por la cantidad de pasos.</p>
+      </div>
+      <div>
+        <div class="didactic-sub">Ángulo de la escalera</div>
+        <p>Es el arco tangente de ch/h. Entre <b>28° y 40°</b> la escalera resulta confortable. Por encima de 45° ya se considera escalera de servicio o fija (como las de altillo). El ángulo ideal suele caer cerca de 35° en escaleras residenciales bien diseñadas.</p>
+        <div class="didactic-sub">Proyección horizontal</div>
+        <p>La escalera ocupa en planta <b>(N&minus;1)&nbsp;&times;&nbsp;h</b> centímetros. Se resta un escalón porque el último peldaño llega al nivel del piso de destino y no genera huella adicional en planta. Este valor es clave para saber si la escalera entra en el espacio disponible.</p>
+        <div class="didactic-sub">Escaleras en L y en U</div>
+        <p>Cuando el desarrollo disponible no alcanza para una escalera recta, o cuando la arquitectura lo requiere, se divide en tramos con descansos intermedios. El descanso debe tener como mínimo el mismo ancho que la escalera. En <b>L</b>: un descanso, dos tramos que giran 90°. En <b>U</b>: dos descansos, tres tramos que giran 180°.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <a href="index.html">ARQ'TOYBOX</a> &middot; 002 Escaleras
+  </div>
+
+</div><!-- .page -->
+
+<script>
+// ═══════════════════════════════════════════
+//  ESTADO GLOBAL
+// ═══════════════════════════════════════════
+let tipo = 'recta';
+let selectedN = null; // N seleccionado por el usuario en la tabla de alternativas
+
+// ═══════════════════════════════════════════
+//  TIPO DE ESCALERA
+// ═══════════════════════════════════════════
+function setTipo(t, btn) {
+  tipo = t;
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  onInput();
+}
+
+// ═══════════════════════════════════════════
+//  ACORDEÓN
+// ═══════════════════════════════════════════
+function toggleDidactic(btn) {
+  const body = document.getElementById('didactic-body');
+  const open = body.classList.toggle('open');
+  btn.querySelectorAll('span')[0].textContent =
+    'Cómo funciona Blondel, contrahuella, huella y ángulo — ' + (open ? 'cerrar' : 'expandir');
+  btn.querySelectorAll('span')[1].innerHTML = open ? '&#9650;' : '&#9660;';
+}
+
+// ═══════════════════════════════════════════
+//  INPUTS
+// ═══════════════════════════════════════════
+function g(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function gRaw(id) { return document.getElementById(id).value; }
+
+function onInput() {
+  selectedN = null; // reset selección manual al cambiar parámetros
+  recalc();
+}
+
+// ═══════════════════════════════════════════
+//  LÓGICA DE CÁLCULO
+// ═══════════════════════════════════════════
+function blondelStatus(b) {
+  if (b >= 60 && b <= 65) return { cls: 'sem-ok',  txt: '✓', badge: 'ok',  label: 'Cumple' };
+  if (b >= 58 && b <= 67) return { cls: 'sem-lim', txt: '~', badge: 'lim', label: 'Límite' };
+  return                         { cls: 'sem-bad', txt: '✗', badge: 'bad', label: 'No cumple' };
+}
+
+function chStatus(ch) {
+  if (ch >= 16 && ch <= 18) return 'val-ok';
+  if (ch >= 14 && ch <= 20) return 'val-lim';
+  return 'val-bad';
+}
+
+function hStatus(h) {
+  if (h >= 28 && h <= 32) return 'val-ok';
+  if (h >= 25 && h <= 35) return 'val-lim';
+  return 'val-bad';
+}
+
+function angStatus(ang) {
+  if (ang >= 28 && ang <= 40) return 'val-ok';
+  if (ang >= 20 && ang <= 45) return 'val-lim';
+  return 'val-bad';
+}
+
+function calcSolucion(H, D, chTarget, hTarget, Btgt) {
+  // Genera todas las soluciones posibles y las ordena por calidad
+  const soluciones = [];
+
+  for (let N = 3; N <= 40; N++) {
+    const ch = H / N;
+    if (ch < 12 || ch > 22) continue;
+
+    let h;
+    if (hTarget > 0) {
+      h = hTarget;
+    } else if (D > 0) {
+      h = D / (N - 1);
+    } else {
+      h = Btgt - 2 * ch;
+    }
+
+    if (h < 18 || h > 45) continue;
+
+    const B    = 2 * ch + h;
+    const proy = h * (N - 1);
+    const ang  = Math.atan(ch / h) * 180 / Math.PI;
+
+    // Penalización: distancia de Blondel al target + distancia de ch al target
+    const penB  = Math.abs(B - Btgt);
+    const penCh = chTarget > 0 ? Math.abs(ch - chTarget) * 2 : 0;
+    const score = penB + penCh;
+
+    soluciones.push({ N, ch, h, B, proy, ang, score });
+  }
+
+  soluciones.sort((a, b) => a.score - b.score);
+  return soluciones;
+}
+
+// ═══════════════════════════════════════════
+//  RECALC PRINCIPAL
+// ═══════════════════════════════════════════
+function recalc() {
+  const H     = g('p-H');
+  const ancho = g('p-ancho') || 100;
+  const D     = g('p-D');
+  const chT   = g('p-ch');
+  const hT    = g('p-h');
+  const Btgt  = g('p-B') || 63;
+
+  if (!H) {
+    resetUI();
+    return;
+  }
+
+  const soluciones = calcSolucion(H, D, chT, hT, Btgt);
+
+  if (!soluciones.length) {
+    document.getElementById('resumen').innerHTML =
+      '<div style="color:#cc0000;font-size:12px;">Sin solución válida con estos parámetros.</div>';
+    return;
+  }
+
+  // Selección: manual o mejor automática
+  let sol;
+  if (selectedN !== null) {
+    sol = soluciones.find(s => s.N === selectedN) || soluciones[0];
+  } else {
+    sol = soluciones[0];
+    selectedN = sol.N;
+  }
+
+  // Actualizar Blondel panel
+  updateBlondel(sol);
+
+  // Actualizar rangos
+  updateRangos(sol);
+
+  // Actualizar resumen
+  updateResumen(sol, H, ancho);
+
+  // Actualizar tabla alternativas
+  updateAltTable(soluciones, sol.N);
+
+  // Dibujar
+  drawCorte(sol, H, ancho);
+  drawPlanta(sol, H, ancho, tipo);
+}
+
+// ═══════════════════════════════════════════
+//  UI: BLONDEL PANEL
+// ═══════════════════════════════════════════
+function updateBlondel(sol) {
+  const st = blondelStatus(sol.B);
+  const sem = document.getElementById('blondel-sem');
+  sem.className = 'blondel-semaforo ' + st.cls;
+  sem.textContent = st.txt;
+  document.getElementById('blondel-val').textContent = sol.B.toFixed(2);
+  document.getElementById('blondel-formula').textContent =
+    `2 × ${sol.ch.toFixed(2)} + ${sol.h.toFixed(2)} = ${sol.B.toFixed(2)} cm`;
+  document.getElementById('blondel-badge').innerHTML =
+    `<span class="badge badge-${st.badge}">${st.label}</span>`;
+}
+
+// ═══════════════════════════════════════════
+//  UI: RANGOS IDEALES
+// ═══════════════════════════════════════════
+function updateRangos(sol) {
+  const chEl  = document.getElementById('ref-ch');
+  const hEl   = document.getElementById('ref-h');
+  const angEl = document.getElementById('ref-ang');
+
+  chEl.textContent  = sol.ch.toFixed(2) + ' cm';
+  hEl.textContent   = sol.h.toFixed(2) + ' cm';
+  angEl.textContent = sol.ang.toFixed(1) + '°';
+
+  chEl.className  = 'val ' + chStatus(sol.ch);
+  hEl.className   = 'val ' + hStatus(sol.h);
+  angEl.className = 'val ' + angStatus(sol.ang);
+}
+
+// ═══════════════════════════════════════════
+//  UI: RESUMEN NUMÉRICO
+// ═══════════════════════════════════════════
+function updateResumen(sol, H, ancho) {
+  document.getElementById('resumen').innerHTML = `
+    <table class="result-table">
+      <tr class="highlight">
+        <td>N° de escalones</td>
+        <td style="font-size:20px; font-family:'Times New Roman',serif;">${sol.N}</td>
+      </tr>
+      <tr><td>Contrahuella (ch)</td><td>${sol.ch.toFixed(2)} cm</td></tr>
+      <tr><td>Huella (h)</td>       <td>${sol.h.toFixed(2)} cm</td></tr>
+      <tr><td>Blondel (2ch+h)</td>  <td>${sol.B.toFixed(2)} cm</td></tr>
+      <tr><td>Ángulo</td>           <td>${sol.ang.toFixed(1)}°</td></tr>
+      <tr><td>Pendiente</td>        <td>${(sol.ch/sol.h*100).toFixed(1)} %</td></tr>
+      <tr><td>Proyección horiz.</td><td>${sol.proy.toFixed(1)} cm</td></tr>
+      <tr><td>Altura total</td>     <td>${H} cm</td></tr>
+      <tr><td>Ancho escalera</td>   <td>${ancho} cm</td></tr>
+    </table>`;
+}
+
+// ═══════════════════════════════════════════
+//  UI: TABLA ALTERNATIVAS
+// ═══════════════════════════════════════════
+function updateAltTable(soluciones, selN) {
+  const rows = soluciones.slice(0, 10).map(s => {
+    const st  = blondelStatus(s.B);
+    const sel = s.N === selN ? ' class="sel"' : '';
+    return `<tr${sel} onclick="selectN(${s.N})">
+      <td>${s.N}</td>
+      <td>${s.ch.toFixed(2)}</td>
+      <td>${s.h.toFixed(2)}</td>
+      <td>${s.B.toFixed(1)} <span class="badge badge-${st.badge}">${st.label}</span></td>
+      <td>${s.proy.toFixed(0)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('alt-wrap').innerHTML = `
+    <table class="alt-table">
+      <thead><tr>
+        <th>N</th><th>ch</th><th>h</th><th>Blondel</th><th>Proy.</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:10px;color:#888888;margin-top:4px;">Clic en una fila para seleccionar esa solución.</div>`;
+}
+
+function selectN(n) {
+  selectedN = n;
+  recalc();
+}
+
+// ═══════════════════════════════════════════
+//  RESET UI
+// ═══════════════════════════════════════════
+function resetUI() {
+  const sem = document.getElementById('blondel-sem');
+  sem.className = 'blondel-semaforo sem-bad';
+  sem.textContent = '?';
+  document.getElementById('blondel-val').textContent = '—';
+  document.getElementById('blondel-formula').textContent = 'Ingresá la altura a salvar para calcular';
+  document.getElementById('blondel-badge').innerHTML = '';
+  document.getElementById('ref-ch').textContent  = '—';
+  document.getElementById('ref-h').textContent   = '—';
+  document.getElementById('ref-ang').textContent = '—';
+  document.getElementById('resumen').innerHTML =
+    '<div style="font-size:12px;color:#aaaaaa;">Ingresá la altura a salvar.</div>';
+  document.getElementById('alt-wrap').innerHTML =
+    '<div style="font-size:11px;color:#aaaaaa;">Calculando...</div>';
+}
+
+// ═══════════════════════════════════════════
+//  SVG HELPERS
+// ═══════════════════════════════════════════
+function svgLine(x1,y1,x2,y2,stroke,sw,dash){
+  const d = dash ? ` stroke-dasharray="${dash}"` : '';
+  return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${stroke}" stroke-width="${sw}"${d}/>`;
+}
+function svgRect(x,y,w,h,fill,stroke,sw,dash){
+  const d = dash ? ` stroke-dasharray="${dash}"` : '';
+  return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"${d}/>`;
+}
+function svgText(x,y,txt,anchor,size,color,bold){
+  const fw = bold ? 'bold' : 'normal';
+  return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" fill="${color}" font-family="Arial" font-size="${size}" text-anchor="${anchor}" font-weight="${fw}">${txt}</text>`;
+}
+function svgCota(x1,y1,x2,y2,label,lado){
+  // Cota entre dos puntos con línea y texto
+  // lado: 'top', 'bottom', 'left', 'right'
+  let svg = '';
+  const tick = 4;
+  if (lado === 'bottom') {
+    const cy = Math.max(y1,y2) + 14;
+    svg += svgLine(x1,y1,x1,cy+tick,'#cc0000',0.7);
+    svg += svgLine(x2,y1,x2,cy+tick,'#cc0000',0.7);
+    svg += svgLine(x1,cy,x2,cy,'#cc0000',0.8);
+    svg += svgText((x1+x2)/2, cy+10, label, 'middle', 9, '#cc0000', false);
+  } else if (lado === 'top') {
+    const cy = Math.min(y1,y2) - 14;
+    svg += svgLine(x1,y1,x1,cy-tick,'#cc0000',0.7);
+    svg += svgLine(x2,y2,x2,cy-tick,'#cc0000',0.7);
+    svg += svgLine(x1,cy,x2,cy,'#cc0000',0.8);
+    svg += svgText((x1+x2)/2, cy-3, label, 'middle', 9, '#cc0000', false);
+  } else if (lado === 'right') {
+    const cx = Math.max(x1,x2) + 14;
+    svg += svgLine(x1,y1,cx+tick,y1,'#cc0000',0.7);
+    svg += svgLine(x2,y2,cx+tick,y2,'#cc0000',0.7);
+    svg += svgLine(cx,y1,cx,y2,'#cc0000',0.8);
+    svg += svgText(cx+12, (y1+y2)/2+4, label, 'start', 9, '#cc0000', false);
+  } else if (lado === 'left') {
+    const cx = Math.min(x1,x2) - 14;
+    svg += svgLine(x1,y1,cx-tick,y1,'#cc0000',0.7);
+    svg += svgLine(x2,y2,cx-tick,y2,'#cc0000',0.7);
+    svg += svgLine(cx,y1,cx,y2,'#cc0000',0.8);
+    svg += svgText(cx-4, (y1+y2)/2+4, label, 'end', 9, '#cc0000', false);
+  }
+  return svg;
+}
+
+// ═══════════════════════════════════════════
+//  DRAW: CORTE LONGITUDINAL
+// ═══════════════════════════════════════════
+function drawCorte(sol, H, ancho) {
+  const { N, ch, h, proy } = sol;
+
+  // Escala visual: que la escalera quepa en ~420px de ancho y ~160px de alto
+  const maxW = 400, maxH = 160;
+  const sc   = Math.min(maxW / (proy + h*2), maxH / H, 1.8);
+
+  const PAD_L = 50, PAD_T = 30, PAD_B = 40, PAD_R = 60;
+  const svgW  = Math.ceil(proy * sc + PAD_L + PAD_R + 20);
+  const svgH  = Math.ceil(H * sc + PAD_T + PAD_B);
+
+  const baseY = PAD_T + H * sc; // Y del piso de partida
+  const startX = PAD_L;
+
+  let svg = `<svg id="svg-corte" viewBox="0 0 ${svgW} ${svgH}"
+    width="${svgW}" height="${svgH}"
+    xmlns="http://www.w3.org/2000/svg" fill="none">`;
+
+  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
+
+  // Título
+  svg += svgText(startX, PAD_T - 10, 'CORTE — escala aprox. 1:' + Math.round(100/sc), 'start', 9, '#555555', false);
+
+  // Piso de partida (línea base)
+  svg += svgLine(startX - 10, baseY, startX + proy*sc + 10, baseY, '#888888', 1, '4,3');
+
+  // Piso de llegada
+  svg += svgLine(startX - 10, PAD_T, startX + proy*sc + 10, PAD_T, '#888888', 1, '4,3');
+
+  // ESCALÓN A ESCALÓN
+  let path = `M ${startX} ${baseY}`;
+  for (let i = 0; i < N; i++) {
+    const x0 = startX + i * h * sc;
+    const y0 = baseY - i * ch * sc;
+    path += ` L ${(x0 + h*sc).toFixed(1)} ${y0.toFixed(1)}`;    // huella
+    path += ` L ${(x0 + h*sc).toFixed(1)} ${(y0 - ch*sc).toFixed(1)}`; // contrahuella
+  }
+
+  svg += `<path d="${path}" stroke="#000000" stroke-width="2" stroke-linejoin="miter"/>`;
+
+  // Diagonal de referencia (línea de pendiente)
+  svg += svgLine(startX, baseY, startX + proy*sc, PAD_T, '#cccccc', 0.8, '3,3');
+
+  // COTAS
+  // Cota altura total (derecha)
+  svg += svgCota(startX + proy*sc, baseY, startX + proy*sc, PAD_T,
+    `H = ${H} cm`, 'right');
+
+  // Cota huella (primer escalón, abajo)
+  svg += svgCota(startX, baseY, startX + h*sc, baseY,
+    `h = ${h.toFixed(1)} cm`, 'bottom');
+
+  // Cota contrahuella (último escalón, derecha con línea pequeña)
+  const lastX = startX + (N-1)*h*sc;
+  const lastY = baseY - (N-1)*ch*sc;
+  svg += svgCota(lastX + h*sc, lastY, lastX + h*sc, lastY - ch*sc,
+    `ch = ${ch.toFixed(1)}`, 'right');
+
+  // Cota proyección horizontal (arriba)
+  svg += svgCota(startX, baseY, startX + proy*sc, baseY,
+    `proy. = ${proy.toFixed(1)} cm`, 'top');
+
+  svg += '</svg>';
+
+  const wrap = document.getElementById('wrap-corte');
+  wrap.innerHTML = svg;
+}
+
+// ═══════════════════════════════════════════
+//  DRAW: PLANTA
+// ═══════════════════════════════════════════
+function drawPlanta(sol, H, ancho, tipo) {
+  const { N, ch, h, proy } = sol;
+
+  if (tipo === 'recta') drawPlantaRecta(sol, ancho);
+  else if (tipo === 'L') drawPlantaL(sol, ancho);
+  else if (tipo === 'U') drawPlantaU(sol, ancho);
+}
+
+// ── PLANTA RECTA ──────────────────────────
+function drawPlantaRecta(sol, ancho) {
+  const { N, ch, h, proy } = sol;
+
+  const maxW = 420;
+  const sc   = Math.min(maxW / (proy + 20), 1.8);
+
+  const PAD_L = 50, PAD_T = 30, PAD_B = 50, PAD_R = 20;
+  const anchoPx = ancho * sc;
+  const proyPx  = proy * sc;
+  const svgW    = Math.ceil(proyPx + PAD_L + PAD_R + 10);
+  const svgH    = Math.ceil(anchoPx + PAD_T + PAD_B);
+
+  const ox = PAD_L, oy = PAD_T;
+
+  let svg = `<svg id="svg-planta" viewBox="0 0 ${svgW} ${svgH}"
+    width="${svgW}" height="${svgH}"
+    xmlns="http://www.w3.org/2000/svg" fill="none">`;
+  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
+  svg += svgText(ox, oy - 10, 'PLANTA — escalera recta', 'start', 9, '#555555', false);
+
+  // Huellas (N-1 rectángulos, alternando)
+  for (let i = 0; i < N-1; i++) {
+    const x = ox + i * h * sc;
+    const fill = i % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
+    svg += svgRect(x, oy, h*sc, anchoPx, fill, '#666666', 0.8);
+    // Número de escalón
+    if (h*sc > 14) {
+      svg += svgText(x + h*sc/2, oy + anchoPx/2 + 4, String(i+1), 'middle', 8, '#888888', false);
+    }
+  }
+
+  // Borde exterior
+  svg += svgRect(ox, oy, proyPx, anchoPx, 'none', '#000000', 1.5);
+
+  // Flecha de dirección de subida
+  const arrowX = ox + proyPx + 6;
+  svg += svgLine(arrowX, oy + anchoPx, arrowX, oy + 4, '#000000', 1);
+  svg += `<polygon points="${arrowX},${(oy+2).toFixed(1)} ${(arrowX-4).toFixed(1)},${(oy+10).toFixed(1)} ${(arrowX+4).toFixed(1)},${(oy+10).toFixed(1)}" fill="#000000"/>`;
+  svg += svgText(arrowX + 6, oy + anchoPx/2 + 4, 'sube', 'start', 8, '#555555', false);
+
+  // Línea de corte (indica dónde va el plano de corte, a media altura)
+  const corteX = ox + (N/2) * h * sc;
+  svg += svgLine(corteX, oy - 8, corteX, oy + anchoPx + 8, '#cc0000', 0.8, '5,3');
+  svg += svgText(corteX, oy - 10, 'A', 'middle', 8, '#cc0000', true);
+  svg += svgText(corteX, oy + anchoPx + 16, "A'", 'middle', 8, '#cc0000', true);
+
+  // COTAS
+  // Proyección horizontal (abajo)
+  svg += svgCota(ox, oy + anchoPx, ox + proyPx, oy + anchoPx,
+    `${proy.toFixed(1)} cm`, 'bottom');
+  // Ancho (izquierda)
+  svg += svgCota(ox, oy, ox, oy + anchoPx,
+    `${ancho} cm`, 'left');
+
+  svg += '</svg>';
+  document.getElementById('wrap-planta').innerHTML = svg;
+}
+
+// ── PLANTA EN L ───────────────────────────
+function drawPlantaL(sol, ancho) {
+  const { N, ch, h } = sol;
+
+  // Dividir en 2 tramos
+  const N1 = Math.ceil(N / 2);
+  const N2 = N - N1;
+  const p1 = (N1 - 1) * h; // proyección tramo 1
+  const p2 = (N2 - 1) * h; // proyección tramo 2
+  const desc = ancho;       // descanso cuadrado = ancho escalera
+
+  const maxW = 400;
+  const sc   = Math.min(maxW / (p1 + desc + 20), 1.6);
+
+  const anchoPx = ancho * sc;
+  const p1px    = p1 * sc;
+  const p2px    = p2 * sc;
+  const descPx  = desc * sc;
+
+  const PAD_L = 50, PAD_T = 30, PAD_B = 50, PAD_R = 50;
+  const svgW  = Math.ceil(p1px + descPx + PAD_L + PAD_R + 10);
+  const svgH  = Math.ceil(anchoPx + p2px + descPx + PAD_T + PAD_B);
+
+  const ox = PAD_L, oy = PAD_T;
+
+  let svg = `<svg id="svg-planta" viewBox="0 0 ${svgW} ${svgH}"
+    width="${svgW}" height="${svgH}"
+    xmlns="http://www.w3.org/2000/svg" fill="none">`;
+  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
+  svg += svgText(ox, oy - 10, 'PLANTA — escalera en L', 'start', 9, '#555555', false);
+
+  // TRAMO 1: horizontal (izquierda a derecha)
+  for (let i = 0; i < N1-1; i++) {
+    const x = ox + i * h * sc;
+    const fill = i % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
+    svg += svgRect(x, oy, h*sc, anchoPx, fill, '#666666', 0.8);
+    if (h*sc > 12) svg += svgText(x+h*sc/2, oy+anchoPx/2+4, String(i+1), 'middle', 7, '#888888', false);
+  }
+  svg += svgRect(ox, oy, p1px, anchoPx, 'none', '#000000', 1.5);
+
+  // DESCANSO
+  const dox = ox + p1px, doy = oy;
+  svg += svgRect(dox, doy, descPx, descPx, '#f0f0e0', '#000000', 1.5);
+  svg += svgText(dox + descPx/2, doy + descPx/2 + 4, 'DESCANSO', 'middle', 8, '#888888', false);
+  svg += svgText(dox + descPx/2, doy + descPx/2 + 14, `${desc}×${desc} cm`, 'middle', 7, '#aaaaaa', false);
+
+  // TRAMO 2: vertical (hacia abajo desde el descanso)
+  const t2ox = dox + descPx - anchoPx;
+  const t2oy = doy + descPx;
+  for (let i = 0; i < N2-1; i++) {
+    const y = t2oy + i * h * sc;
+    const fill = (N1-1+i) % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
+    svg += svgRect(t2ox, y, anchoPx, h*sc, fill, '#666666', 0.8);
+    if (h*sc > 12) svg += svgText(t2ox+anchoPx/2, y+h*sc/2+4, String(N1+i), 'middle', 7, '#888888', false);
+  }
+  svg += svgRect(t2ox, t2oy, anchoPx, p2px, 'none', '#000000', 1.5);
+
+  // Flechas
+  svg += svgLine(ox - 6, oy + anchoPx/2, ox + p1px - 4, oy + anchoPx/2, '#000000', 0.8);
+  svg += `<polygon points="${(ox+p1px-2).toFixed(1)},${(oy+anchoPx/2).toFixed(1)} ${(ox+p1px-8).toFixed(1)},${(oy+anchoPx/2-3).toFixed(1)} ${(ox+p1px-8).toFixed(1)},${(oy+anchoPx/2+3).toFixed(1)}" fill="#000000"/>`;
+
+  // COTAS
+  // Tramo 1
+  svg += svgCota(ox, oy+anchoPx, ox+p1px, oy+anchoPx, `${p1.toFixed(0)} cm (${N1-1} huellas)`, 'bottom');
+  // Ancho
+  svg += svgCota(ox, oy, ox, oy+anchoPx, `${ancho} cm`, 'left');
+  // Descanso
+  svg += svgCota(dox, oy-14, dox+descPx, oy-14, `desc. ${desc} cm`, 'top');
+  // Tramo 2
+  svg += svgCota(t2ox+anchoPx, t2oy, t2ox+anchoPx, t2oy+p2px, `${p2.toFixed(0)} cm (${N2-1} huellas)`, 'right');
+
+  svg += '</svg>';
+  document.getElementById('wrap-planta').innerHTML = svg;
+}
+
+// ── PLANTA EN U ───────────────────────────
+// Geometría: dos tramos paralelos que suben en sentidos opuestos,
+// unidos por un descanso en el extremo superior. Ojo en el centro.
+//
+//   T1 (sube ↑)  |  OJO  |  T2 (sube ↑)
+//   ┌────────────┬────────┬────────────┐
+//   │ N/2 esc.   │        │ N/2 esc.   │  ← DESCANSO (une los tramos)
+//   │            │  void  │            │
+//   │  esc 1→N/2 │        │ esc N→N/2+1│
+//   └────────────┴────────┴────────────┘
+//   PISO BAJO                  PISO BAJO
+//
+// T1 sube de abajo hacia el descanso (huellas van de abajo a arriba = Y decrece)
+// T2 baja desde el descanso (huellas van de arriba a abajo = Y crece), sentido inverso
+// Ojo: espacio vacío entre los dos tramos (ancho paramétrico, mínimo = ancho tramo)
+
+function drawPlantaU(sol, ancho) {
+  const { N, ch, h } = sol;
+
+  // Dos tramos iguales
+  const N1 = Math.ceil(N / 2);   // tramo 1
+  const N2 = N - N1;              // tramo 2
+  const p1 = (N1 - 1) * h;       // proyección tramo 1 (cm)
+  const p2 = (N2 - 1) * h;       // proyección tramo 2 (cm)
+  const tramos = Math.max(p1, p2); // alto total de los tramos
+
+  // Ojo: mínimo = ancho del tramo, pero puede ser mayor
+  const ojo = ancho;              // ancho del ojo (cm) = ancho escalera por defecto
+  const descAncho = 2*ancho + ojo; // ancho total del descanso (cubre ambos tramos + ojo)
+  const descAlto  = ancho;        // profundidad del descanso = ancho escalera
+
+  // Escala visual
+  const maxW = 400;
+  const totalW = descAncho; // ancho total de la figura
+  const totalH = tramos + descAlto;
+  const sc = Math.min(maxW / totalW, 200 / totalH, 2.0);
+
+  const anchoPx  = ancho * sc;
+  const ojoPx    = ojo   * sc;
+  const p1px     = p1    * sc;
+  const p2px     = p2    * sc;
+  const descAPx  = descAncho * sc;
+  const descHPx  = descAlto  * sc;
+  const trPx     = tramos    * sc;
+
+  const PAD_L = 50, PAD_T = 30, PAD_B = 50, PAD_R = 60;
+  const svgW  = Math.ceil(descAPx + PAD_L + PAD_R);
+  const svgH  = Math.ceil(trPx + descHPx + PAD_T + PAD_B);
+
+  // Origen: esquina superior izquierda del conjunto
+  const ox = PAD_L, oy = PAD_T;
+
+  // Coordenadas clave
+  const t1_x  = ox;                        // X izq. tramo 1
+  const t2_x  = ox + anchoPx + ojoPx;      // X izq. tramo 2
+  const desc_y = oy;                        // Y superior del descanso
+  const tram_y = oy + descHPx;             // Y donde arrancan los tramos (debajo del descanso)
+
+  let svg = `<svg id="svg-planta" viewBox="0 0 ${svgW} ${svgH}"
+    width="${svgW}" height="${svgH}"
+    xmlns="http://www.w3.org/2000/svg" fill="none">`;
+  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
+  svg += svgText(ox, oy - 10, 'PLANTA — escalera en U', 'start', 9, '#555555', false);
+
+  // ── DESCANSO (arriba, ancho completo) ──
+  svg += svgRect(ox, desc_y, descAPx, descHPx, '#f0f0e0', '#000000', 1.5);
+  svg += svgText(ox + descAPx/2, desc_y + descHPx/2 + 4,
+    'DESCANSO', 'middle', 8, '#888888', false);
+  svg += svgText(ox + descAPx/2, desc_y + descHPx/2 + 14,
+    `${descAncho.toFixed(0)} × ${descAlto} cm`, 'middle', 7, '#aaaaaa', false);
+
+  // ── OJO (centro, vacío) ──
+  // Ya queda vacío porque no dibujamos nada ahí — solo marcamos el contorno
+  svg += svgRect(ox + anchoPx, tram_y, ojoPx, trPx, '#f8f8f8', '#cccccc', 0.8, '4,3');
+  svg += svgText(ox + anchoPx + ojoPx/2, tram_y + trPx/2 + 4,
+    'OJO', 'middle', 9, '#cccccc', false);
+  svg += svgText(ox + anchoPx + ojoPx/2, tram_y + trPx/2 + 14,
+    `${ojo} cm`, 'middle', 8, '#cccccc', false);
+
+  // ── TRAMO 1 (izquierda, huellas van de abajo hacia arriba) ──
+  // Escalón 1 está abajo, N1 está arriba pegado al descanso
+  for (let i = 0; i < N1 - 1; i++) {
+    // i=0 es el primer escalón (más abajo), i=N1-2 es el último (más arriba)
+    const y    = tram_y + p1px - (i + 1) * h * sc;
+    const fill = i % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
+    svg += svgRect(t1_x, y, anchoPx, h*sc, fill, '#666666', 0.8);
+    if (h*sc > 12)
+      svg += svgText(t1_x + anchoPx/2, y + h*sc/2 + 4,
+        String(i + 1), 'middle', 7, '#888888', false);
+  }
+  svg += svgRect(t1_x, tram_y, anchoPx, p1px, 'none', '#000000', 1.5);
+
+  // ── TRAMO 2 (derecha, huellas van de abajo hacia arriba también) ──
+  // Misma orientación que T1 — ambos suben hacia el descanso
+  for (let i = 0; i < N2 - 1; i++) {
+    const y    = tram_y + p2px - (i + 1) * h * sc;
+    const fill = (N1 - 1 + i) % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
+    svg += svgRect(t2_x, y, anchoPx, h*sc, fill, '#666666', 0.8);
+    if (h*sc > 12)
+      svg += svgText(t2_x + anchoPx/2, y + h*sc/2 + 4,
+        String(N1 + i), 'middle', 7, '#888888', false);
+  }
+  svg += svgRect(t2_x, tram_y, anchoPx, p2px, 'none', '#000000', 1.5);
+
+  // ── FLECHAS DE SENTIDO DE SUBIDA ──
+  // T1: flecha apunta hacia arriba (hacia el descanso)
+  const arr1x = t1_x + anchoPx/2;
+  svg += svgLine(arr1x, tram_y + p1px - 6, arr1x, tram_y + 4, '#000000', 0.8);
+  svg += `<polygon points="${arr1x},${(tram_y+2).toFixed(1)} ${(arr1x-3).toFixed(1)},${(tram_y+8).toFixed(1)} ${(arr1x+3).toFixed(1)},${(tram_y+8).toFixed(1)}" fill="#000000"/>`;
+  svg += svgText(t1_x - 14, tram_y + p1px/2 + 4, '↑', 'middle', 10, '#555555', false);
+
+  // T2: flecha apunta hacia arriba también
+  const arr2x = t2_x + anchoPx/2;
+  svg += svgLine(arr2x, tram_y + p2px - 6, arr2x, tram_y + 4, '#000000', 0.8);
+  svg += `<polygon points="${arr2x},${(tram_y+2).toFixed(1)} ${(arr2x-3).toFixed(1)},${(tram_y+8).toFixed(1)} ${(arr2x+3).toFixed(1)},${(tram_y+8).toFixed(1)}" fill="#000000"/>`;
+  svg += svgText(t2_x + anchoPx + 6, tram_y + p2px/2 + 4, '↑', 'start', 10, '#555555', false);
+
+  // ── COTAS ──
+  // Ancho tramo (izquierda)
+  svg += svgCota(t1_x, tram_y, t1_x, tram_y + p1px,
+    `${p1.toFixed(0)} cm (${N1-1} huellas)`, 'left');
+  // Ancho escalera T1 (abajo)
+  svg += svgCota(t1_x, tram_y + p1px, t1_x + anchoPx, tram_y + p1px,
+    `${ancho} cm`, 'bottom');
+  // Ojo (abajo)
+  svg += svgCota(t1_x + anchoPx, tram_y + p1px, t2_x, tram_y + p1px,
+    `ojo ${ojo} cm`, 'bottom');
+  // Ancho escalera T2 (abajo)
+  svg += svgCota(t2_x, tram_y + p2px, t2_x + anchoPx, tram_y + p2px,
+    `${ancho} cm`, 'bottom');
+  // Descanso ancho total (arriba)
+  svg += svgCota(ox, desc_y, ox + descAPx, desc_y,
+    `descanso ${descAncho.toFixed(0)} cm`, 'top');
+  // Profundidad descanso (derecha)
+  svg += svgCota(ox + descAPx, desc_y, ox + descAPx, tram_y,
+    `${descAlto} cm`, 'right');
+
+  svg += '</svg>';
+  document.getElementById('wrap-planta').innerHTML = svg;
+}
+
+// ═══════════════════════════════════════════
+//  INIT: disparar con valores por defecto
+// ═══════════════════════════════════════════
+document.getElementById('p-H').value = 270;
+recalc();
+</script>
+</body>
+</html>
