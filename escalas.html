@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=780"/>
+  <title>Escalas — ARQ'TOYBOX</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23ffffff'/><polyline points='6,26 6,6 26,6' stroke='%23000080' stroke-width='3.5' fill='none' stroke-linecap='square'/><line x1='6' y1='26' x2='26' y2='6' stroke='%23cc0000' stroke-width='1.5' stroke-dasharray='3,2'/></svg>"/>
+  <style>
+    /* Diagrama de papel */
+    .paper-diagram {
+      margin-top: 14px;
+    }
+
+    .paper-diagram svg {
+      display: block;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    /* Tabla comparativa más compacta */
+    .comp-table td { padding: 2px 6px; }
+
+    /* Input grande para la medida principal */
+    .input-big input {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 22px;
+      width: 100%;
+      border: 1px solid #999999;
+      padding: 4px 6px;
+      background: #ffffff;
+    }
+
+    .input-big select {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 16px;
+      border: 1px solid #999999;
+      padding: 4px 5px;
+      background: #ffffff;
+      margin-top: 4px;
+      width: 100%;
+    }
+
+    /* Escala grande */
+    .scale-display {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 32px;
+      font-weight: bold;
+      color: #000080;
+      margin-bottom: 6px;
+    }
+
+    .scale-display span {
+      font-size: 18px;
+      color: #555555;
+      font-weight: normal;
+    }
+
+    /* Resultado en papel */
+    .paper-result {
+      margin: 10px 0;
+      padding: 8px 10px;
+      background: #ffffcc;
+      border: 1px solid #cccc00;
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    .paper-result-val {
+      font-size: 28px;
+      font-weight: bold;
+      color: #000000;
+    }
+
+    .paper-result-label {
+      font-size: 11px;
+      color: #555555;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .paper-result-also {
+      font-size: 12px;
+      color: #444444;
+      margin-top: 4px;
+    }
+
+    /* Leyenda del diagrama */
+    .diagram-legend {
+      font-size: 11px;
+      color: #555555;
+      margin-top: 6px;
+    }
+
+    .diagram-legend b { color: #cc0000; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="site-header">
+    <a href="index.html" class="site-title">ARQ'TOYBOX</a>
+    <div class="site-subtitle">Herramientas de arquitectura &mdash; Lucas &middot; FADU UDELAR</div>
+  </div>
+
+  <!-- NAV -->
+  <div class="site-nav">
+    <a href="index.html">Inicio</a>
+    <span>|</span>
+    <a href="escalas.html" class="current">Escalas</a>
+    <span>|</span>
+    <a href="escaleras.html">Escaleras</a>
+    <span>|</span>
+    <a href="unidades.html">Unidades</a>
+    <span>|</span>
+    <a href="secciones.html">Secciones</a>
+    <span>|</span>
+    <a href="solar.html">Solar</a>
+  </div>
+
+  <hr/>
+
+  <div class="tool-title">[001] Calculadora de Escalas</div>
+
+  <!-- CUERPO PRINCIPAL -->
+  <table class="tool-table">
+    <tr>
+
+      <!-- COLUMNA IZQUIERDA: INPUTS -->
+      <td class="col-params">
+        <div class="col-heading">Parámetros</div>
+
+        <!-- Escala -->
+        <div class="field">
+          <label>Escala &mdash; 1 :</label>
+          <input type="number" id="sc-N" value="100" min="1" step="1"
+            oninput="onScaleInput(this.value)"/>
+          <div class="note">denominador</div>
+        </div>
+
+        <!-- Presets -->
+        <div class="presets">
+          <button class="preset-btn" onclick="setScale(5)">1:5</button>
+          <button class="preset-btn" onclick="setScale(10)">1:10</button>
+          <button class="preset-btn" onclick="setScale(20)">1:20</button>
+          <button class="preset-btn" onclick="setScale(25)">1:25</button>
+          <button class="preset-btn" onclick="setScale(50)">1:50</button>
+          <button class="preset-btn active" onclick="setScale(100)">1:100</button>
+          <button class="preset-btn" onclick="setScale(200)">1:200</button>
+          <button class="preset-btn" onclick="setScale(500)">1:500</button>
+          <button class="preset-btn" onclick="setScale(1000)">1:1000</button>
+        </div>
+
+        <hr class="sep"/>
+
+        <!-- Medida real -->
+        <div class="field">
+          <label>Medida real</label>
+          <div class="input-big">
+            <input type="number" id="sc-real" step="any" placeholder="0"
+              oninput="clearPaper(); calc()"/>
+            <select id="sc-real-u" onchange="calc()">
+              <option value="mm">mm</option>
+              <option value="cm">cm</option>
+              <option value="m" selected>m</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Separador inverso -->
+        <div style="font-size:11px; color:#888888; text-align:center; margin:8px 0;">
+          &mdash;&mdash; o desde el papel &mdash;&mdash;
+        </div>
+
+        <!-- Medida en papel (inverso) -->
+        <div class="field">
+          <label>Medida en papel</label>
+          <div class="input-big">
+            <input type="number" id="sc-papel" step="any" placeholder="0"
+              oninput="clearReal(); calc()"/>
+            <select id="sc-papel-u" onchange="calc()">
+              <option value="mm" selected>mm</option>
+              <option value="cm">cm</option>
+            </select>
+          </div>
+        </div>
+      </td>
+
+      <!-- COLUMNA CENTRAL: RESULTADO + DIAGRAMA -->
+      <td class="col-result">
+        <div class="col-heading">Resultado</div>
+
+        <!-- Escala activa -->
+        <div class="scale-display">
+          1 : <span id="r-escala">100</span>
+        </div>
+
+        <!-- Resultado principal -->
+        <div class="paper-result" id="r-box">
+          <div class="paper-result-label">En papel</div>
+          <div class="paper-result-val" id="r-mm">&mdash;</div>
+          <div class="paper-result-also" id="r-also"></div>
+        </div>
+
+        <!-- Medida real resultante (cuando se ingresa desde papel) -->
+        <div id="r-real-box" style="font-size:12px; color:#444444; margin-bottom:10px; display:none;">
+          Medida real: <span id="r-real" style="font-family:'Courier New',monospace; font-weight:bold;"></span>
+        </div>
+
+        <hr class="sep"/>
+
+        <!-- DIAGRAMA: medida en el papel -->
+        <div class="col-heading">Cómo se ve en el papel</div>
+        <div class="paper-diagram">
+          <svg id="paper-svg" viewBox="0 0 460 260"
+            xmlns="http://www.w3.org/2000/svg" fill="none">
+            <text x="10" y="20" fill="#aaaaaa" font-family="Arial" font-size="12">
+              Ingresá una medida para ver el diagrama.
+            </text>
+          </svg>
+        </div>
+        <div class="diagram-legend" id="diagram-legend"></div>
+
+        <hr class="sep"/>
+
+        <!-- TABLA COMPARATIVA -->
+        <div class="col-heading">La misma medida en otras escalas</div>
+        <table class="comp-table" id="comp-table">
+          <tr>
+            <td colspan="3" style="color:#aaaaaa; font-size:11px;">
+              Ingresá una medida para ver la tabla.
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- COLUMNA DERECHA: REFERENCIA -->
+      <td class="col-info">
+        <div class="col-heading">Referencia</div>
+
+        <div class="info-section">
+          <div class="info-title">Fórmulas</div>
+          <span class="formula">papel = real &divide; N</span>
+          <span class="formula">real = papel &times; N</span>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Escalas típicas</div>
+          <div class="info-text">
+            <b>1:1&ndash;1:5</b><br/>detalles constructivos<br/><br/>
+            <b>1:10&ndash;1:20</b><br/>carpintería, muros<br/><br/>
+            <b>1:50</b><br/>plantas arquitectónicas<br/><br/>
+            <b>1:100</b><br/>proyectos completos<br/><br/>
+            <b>1:200&ndash;1:500</b><br/>sitio, implantación<br/><br/>
+            <b>1:1000+</b><br/>planimetría urbana
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Maquetas</div>
+          <div class="info-text">
+            1:50 &middot; 1:100 &middot; 1:200<br/>
+            <br/>
+            A <b>1:50</b><br/>
+            1&nbsp;m = 2&nbsp;cm
+            <br/><br/>
+            A <b>1:100</b><br/>
+            1&nbsp;m = 1&nbsp;cm
+            <br/><br/>
+            A <b>1:200</b><br/>
+            1&nbsp;m = 5&nbsp;mm
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-title">Formatos</div>
+          <div class="info-text">
+            <b>A4</b> 210&times;297&nbsp;mm<br/>
+            <b>A3</b> 297&times;420&nbsp;mm<br/>
+            <b>A2</b> 420&times;594&nbsp;mm<br/>
+            <b>A1</b> 594&times;841&nbsp;mm<br/>
+            <b>A0</b> 841&times;1189&nbsp;mm
+          </div>
+        </div>
+      </td>
+
+    </tr>
+  </table>
+
+  <!-- ACORDEÓN DIDÁCTICO -->
+  <div class="didactic">
+    <button class="didactic-btn" onclick="toggleDidactic(this)">
+      <span>¿Qué es la escala? ¿Cómo se usa? &mdash; expandir</span>
+      <span id="didactic-arrow">&#9660;</span>
+    </button>
+    <div class="didactic-body" id="didactic-body">
+
+      <div>
+        <div class="didactic-sub">Qué significa 1:N</div>
+        <p>
+          La escala expresa cuántas veces más grande es la realidad respecto al dibujo.
+          <b>1:100</b> significa que 1&nbsp;cm en el papel equivale a 100&nbsp;cm (1&nbsp;m) en la realidad.
+          <b>1:1</b> sería tamaño natural.
+        </p>
+        <div class="didactic-sub">Por qué se usa</div>
+        <p>
+          Los edificios tienen decenas de metros — no entran en un papel.
+          La escala permite representar objetos grandes en superficies manejables
+          manteniendo todas las proporciones intactas.
+        </p>
+        <div class="didactic-sub">Escala grande vs. pequeña</div>
+        <p>
+          Una escala <b>"grande"</b> (1:5, 1:10) muestra pocos elementos pero con mucho detalle.
+          Una escala <b>"pequeña"</b> (1:500, 1:1000) abarca mucho territorio pero pierde el detalle.
+          "Grande" y "pequeño" se refieren al denominador: 1:5 es mayor que 1:100 como fracción.
+        </p>
+      </div>
+
+      <div>
+        <div class="didactic-sub">El diagrama de papel</div>
+        <p>
+          El diagrama muestra, a escala real, cuánto ocupa tu medida dentro de cada formato de hoja.
+          Si la barra roja no entra dentro del rectángulo del papel, esa escala no sirve para ese formato.
+        </p>
+        <div class="didactic-sub">Cómo elegir la escala</div>
+        <p>
+          Primero determiná qué tenés que dibujar y cuánto mide en la realidad.
+          Luego mirá la tabla comparativa: elegí la escala donde la medida en papel
+          entra cómodamente en el formato que vas a usar, con margen para cotas y
+          carátula.
+        </p>
+        <div class="didactic-sub">Error frecuente</div>
+        <p>
+          Confundir el numerador y el denominador. En 1:50, el <b>1</b> es el papel y
+          el <b>50</b> es la realidad — no al revés.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <a href="index.html">ARQ'TOYBOX</a> &middot; 001 Escalas
+  </div>
+
+</div><!-- .page -->
+
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTES
+// ═══════════════════════════════════════════
+const ALL_SCALES = [5, 10, 20, 25, 50, 75, 100, 200, 500, 1000];
+const TO_MM = { mm: 1, cm: 10, m: 1000 };
+
+// Formatos ISO A en mm [ancho, alto] (paisaje y retrato)
+const FORMATS = [
+  { name: 'A4',  w: 210,  h: 297  },
+  { name: 'A3',  w: 297,  h: 420  },
+  { name: 'A2',  w: 420,  h: 594  },
+  { name: 'A1',  w: 594,  h: 841  },
+  { name: 'A0',  w: 841,  h: 1189 },
+];
+
+// ═══════════════════════════════════════════
+//  UTILIDADES
+// ═══════════════════════════════════════════
+function fmtPaper(mm) {
+  // Formatea una medida en mm de manera legible
+  if (mm >= 1000)  return (mm / 1000).toFixed(3) + ' m';
+  if (mm >= 10)    return (mm / 10).toFixed(2) + ' cm';
+  if (mm < 0.01)   return mm.toExponential(2) + ' mm';
+  return mm.toFixed(2) + ' mm';
+}
+
+function fmtReal(mm) {
+  if (mm >= 1e6)  return (mm / 1e6).toFixed(3) + ' km';
+  if (mm >= 1000) return (mm / 1000).toFixed(3) + ' m';
+  if (mm >= 10)   return (mm / 10).toFixed(2) + ' cm';
+  return mm.toFixed(2) + ' mm';
+}
+
+// ═══════════════════════════════════════════
+//  PRESETS DE ESCALA
+// ═══════════════════════════════════════════
+function setScale(n) {
+  document.getElementById('sc-N').value = n;
+  highlightPreset(n);
+  calc();
+}
+
+function onScaleInput(v) {
+  highlightPreset(+v);
+  calc();
+}
+
+function highlightPreset(v) {
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const bv = parseInt(btn.textContent.split(':')[1]);
+    btn.classList.toggle('active', bv === +v);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  LIMPIAR CAMPOS AL ESCRIBIR EN EL OTRO
+// ═══════════════════════════════════════════
+function clearPaper() {
+  document.getElementById('sc-papel').value = '';
+}
+
+function clearReal() {
+  document.getElementById('sc-real').value = '';
+}
+
+// ═══════════════════════════════════════════
+//  CÁLCULO PRINCIPAL
+// ═══════════════════════════════════════════
+function calc() {
+  const N    = +document.getElementById('sc-N').value || 100;
+  const rv   = document.getElementById('sc-real').value;
+  const ru   = document.getElementById('sc-real-u').value;
+  const pv   = document.getElementById('sc-papel').value;
+  const pu   = document.getElementById('sc-papel-u').value;
+
+  document.getElementById('r-escala').textContent = N;
+
+  let realMm   = null;
+  let paperMm  = null;
+
+  if (rv !== '' && +rv >= 0) {
+    realMm  = +rv * TO_MM[ru];
+    paperMm = realMm / N;
+  } else if (pv !== '' && +pv >= 0) {
+    paperMm = +pv * TO_MM[pu];
+    realMm  = paperMm * N;
+  }
+
+  if (realMm === null) {
+    resetOutput();
+    return;
+  }
+
+  // Resultado principal
+  document.getElementById('r-mm').textContent = fmtPaper(paperMm);
+  document.getElementById('r-also').textContent =
+    paperMm >= 10
+      ? fmtPaper(paperMm / 10).replace('cm', '') + ' cm  /  ' + fmtPaper(paperMm) + '  en papel'
+      : '';
+
+  // Medida real (cuando se ingresa desde papel)
+  const realBox = document.getElementById('r-real-box');
+  if (pv !== '' && +pv >= 0) {
+    document.getElementById('r-real').textContent = fmtReal(realMm);
+    realBox.style.display = 'block';
+  } else {
+    realBox.style.display = 'none';
+  }
+
+  // Diagrama de papel
+  drawDiagram(paperMm, N);
+
+  // Tabla comparativa
+  drawCompTable(realMm, N);
+}
+
+// ═══════════════════════════════════════════
+//  DIAGRAMA SVG
+// ═══════════════════════════════════════════
+function drawDiagram(paperMm, scale) {
+  const SVG_W = 460;
+  const SVG_H = 260;
+  const PAD   = 12; // padding interno del SVG
+
+  // Disponible para dibujar
+  const drawW = SVG_W - PAD * 2;
+  const drawH = SVG_H - PAD * 2 - 30; // 30 para etiquetas abajo
+
+  // Escala visual: que el papel más grande (A0 ancho=841mm) quepa en drawW
+  const maxFmtW = 841; // A0 ancho en mm
+  const scVis   = (drawW * 0.85) / maxFmtW; // px por mm
+
+  // Posición Y base (desde arriba, todos los formatos alineados arriba)
+  const baseX = PAD;
+  const baseY = PAD + 8; // un poco abajo para el label de escala
+
+  let svg = `<svg id="paper-svg" viewBox="0 0 ${SVG_W} ${SVG_H}"
+    xmlns="http://www.w3.org/2000/svg" fill="none">`;
+
+  // Fondo
+  svg += `<rect width="${SVG_W}" height="${SVG_H}" fill="#fafafa"/>`;
+
+  // Para cada formato, dibujar el rectángulo de papel
+  // Los dibujamos como bandas verticales solapadas (del más grande al más chico)
+  // alineadas por la esquina superior izquierda
+
+  const fmtColors = ['#e8e8e8', '#e0e0e0', '#d8d8d8', '#d0d0d0', '#c8c8c8'];
+
+  FORMATS.forEach((fmt, i) => {
+    const fw = fmt.w * scVis;
+    const fh = fmt.h * scVis;
+
+    // Solo dibujamos si entra en el SVG
+    if (baseX + fw > SVG_W - PAD || baseY + fh > SVG_H - 30) {
+      // Igual dibujamos el rectángulo pero recortado visualmente con clip
+    }
+
+    svg += `<rect x="${baseX}" y="${baseY}"
+      width="${Math.min(fw, drawW)}" height="${Math.min(fh, drawH)}"
+      fill="${fmtColors[i]}" stroke="#aaaaaa" stroke-width="0.8"/>`;
+
+    // Label del formato (esquina superior derecha del rectángulo)
+    const labelX = baseX + Math.min(fw, drawW) - 2;
+    const labelY = baseY + 10;
+    svg += `<text x="${labelX}" y="${labelY}"
+      fill="#666666" font-family="Arial" font-size="9"
+      text-anchor="end">${fmt.name}</text>`;
+  });
+
+  // Medida en papel — barra roja horizontal
+  const barW = Math.min(paperMm * scVis, drawW);
+  const barY = baseY + drawH * 0.55;
+  const barH_px = 6;
+
+  // Línea de suelo
+  svg += `<line x1="${baseX}" y1="${barY + barH_px + 1}"
+    x2="${baseX + drawW * 0.9}" y2="${barY + barH_px + 1}"
+    stroke="#cccccc" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+
+  // Barra de la medida
+  svg += `<rect x="${baseX}" y="${barY}"
+    width="${barW}" height="${barH_px}"
+    fill="#cc0000" opacity="0.85"/>`;
+
+  // Punta de flecha si la medida excede el ancho visible
+  if (paperMm * scVis > drawW) {
+    svg += `<text x="${baseX + drawW - 2}" y="${barY + barH_px - 1}"
+      fill="#cc0000" font-family="Arial" font-size="11">&#8594;</text>`;
+  }
+
+  // Cota de la barra
+  const cotaY = barY + barH_px + 14;
+  svg += `<line x1="${baseX}" y1="${barY + barH_px + 6}"
+    x2="${baseX}" y2="${cotaY - 2}"
+    stroke="#cc0000" stroke-width="0.8"/>`;
+  svg += `<line x1="${baseX + barW}" y1="${barY + barH_px + 6}"
+    x2="${baseX + barW}" y2="${cotaY - 2}"
+    stroke="#cc0000" stroke-width="0.8"/>`;
+  svg += `<line x1="${baseX}" y1="${cotaY}"
+    x2="${baseX + barW}" y2="${cotaY}"
+    stroke="#cc0000" stroke-width="0.8"/>`;
+
+  const midCota = baseX + barW / 2;
+  svg += `<text x="${midCota}" y="${cotaY + 11}"
+    fill="#cc0000" font-family="'Courier New',monospace" font-size="10"
+    text-anchor="middle">${fmtPaper(paperMm)}</text>`;
+
+  // Etiqueta escala arriba
+  svg += `<text x="${baseX}" y="${baseY - 2}"
+    fill="#555555" font-family="Arial" font-size="10">
+    Escala 1:${scale} — ${fmtPaper(paperMm)} en papel</text>`;
+
+  // Leyenda de los formatos que contienen la medida
+  const fitting = FORMATS.filter(f => paperMm <= f.w && paperMm <= f.h);
+  const notFitting = FORMATS.filter(f => paperMm > f.w && paperMm > f.h);
+
+  svg += '</svg>';
+
+  document.getElementById('paper-svg').outerHTML = svg;
+
+  // Leyenda de texto debajo
+  let legend = '';
+  if (fitting.length) {
+    legend += `Entra en: <b>${fitting.map(f => f.name).join(', ')}</b>`;
+  }
+  if (notFitting.length) {
+    legend += (legend ? ' &mdash; ' : '') +
+      `No entra en: ${notFitting.map(f => f.name).join(', ')}`;
+  }
+  document.getElementById('diagram-legend').innerHTML = legend;
+}
+
+// ═══════════════════════════════════════════
+//  TABLA COMPARATIVA
+// ═══════════════════════════════════════════
+function drawCompTable(realMm, currentScale) {
+  const rows = ALL_SCALES.map(s => {
+    const p   = realMm / s;
+    const hl  = s === currentScale ? ' class="highlight"' : '';
+    const mark = s === currentScale ? ' &#9664;' : '';
+    return `<tr${hl}>
+      <td>1 : ${s}${mark}</td>
+      <td>${fmtPaper(p)}</td>
+      <td>${fmtPaper(p / 10).replace('mm', 'cm')}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('comp-table').innerHTML = `
+    <thead>
+      <tr style="background:#f0f0f0; font-size:10px; text-transform:uppercase; letter-spacing:1px;">
+        <td style="color:#555555;">Escala</td>
+        <td style="color:#555555;">En papel (mm)</td>
+        <td style="color:#555555;">En papel (cm)</td>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>`;
+}
+
+// ═══════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════
+function resetOutput() {
+  document.getElementById('r-mm').textContent = '—';
+  document.getElementById('r-also').textContent = '';
+  document.getElementById('r-real-box').style.display = 'none';
+  document.getElementById('diagram-legend').textContent = '';
+  document.getElementById('paper-svg').outerHTML =
+    `<svg id="paper-svg" viewBox="0 0 460 260"
+      xmlns="http://www.w3.org/2000/svg" fill="none">
+      <rect width="460" height="260" fill="#fafafa"/>
+      <text x="10" y="20" fill="#aaaaaa" font-family="Arial" font-size="12">
+        Ingresá una medida para ver el diagrama.
+      </text>
+    </svg>`;
+  document.getElementById('comp-table').innerHTML =
+    `<tr><td colspan="3" style="color:#aaaaaa; font-size:11px;">
+      Ingresá una medida para ver la tabla.
+    </td></tr>`;
+}
+
+// ═══════════════════════════════════════════
+//  ACORDEÓN
+// ═══════════════════════════════════════════
+function toggleDidactic(btn) {
+  const body  = document.getElementById('didactic-body');
+  const arrow = document.getElementById('didactic-arrow');
+  const open  = body.classList.toggle('open');
+  arrow.innerHTML = open ? '&#9650;' : '&#9660;';
+  btn.querySelector('span').textContent = open
+    ? '¿Qué es la escala? ¿Cómo se usa? — cerrar'
+    : '¿Qué es la escala? ¿Cómo se usa? — expandir';
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+highlightPreset(100);
+</script>
+</body>
+</html>
