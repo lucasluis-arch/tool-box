@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=780"/>
+  <title>ARQ'TOYBOX</title>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Favicon: escuadra SVG inline como data URI -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23ffffff'/><polyline points='6,26 6,6 26,6' stroke='%23000080' stroke-width='3.5' fill='none' stroke-linecap='square'/><line x1='6' y1='26' x2='26' y2='6' stroke='%23cc0000' stroke-width='1.5' stroke-dasharray='3,2'/></svg>"/>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="site-header">
+    <a href="index.html" class="site-title">ARQ'TOYBOX</a>
+    <div class="site-subtitle">
+      Herramientas de arquitectura &mdash; Lucas &middot; FADU UDELAR
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="site-nav">
+    <a href="index.html" class="current">Inicio</a>
+    <span>|</span>
+    <a href="escalas.html">Escalas</a>
+    <span>|</span>
+    <a href="escaleras.html">Escaleras</a>
+    <span>|</span>
+    <a href="unidades.html">Unidades</a>
+    <span>|</span>
+    <a href="secciones.html">Secciones</a>
+    <span>|</span>
+    <a href="solar.html">Solar</a>
+  </div>
+
+  <hr/>
+
+  <!-- INTRO -->
+  <p style="margin-bottom:16px; font-size:13px; color:#444444;">
+    Calculadoras para dibujo técnico, diseño y estructuras.
+    Desarrolladas en paralelo al trabajo de taller.
+    En construcción permanente.
+  </p>
+
+  <!-- CARDS -->
+  <table class="card-grid">
+    <tr>
+      <td onclick="location.href='escalas.html'">
+        <div class="card-num">[001]</div>
+        <div class="card-title">Escalas</div>
+        <div class="card-desc">
+          Convertí medidas reales a papel y viceversa.
+          Escalas predefinidas o libres. Tabla comparativa automática.
+        </div>
+      </td>
+      <td onclick="location.href='escaleras.html'">
+        <div class="card-num">[002]</div>
+        <div class="card-title">Escaleras</div>
+        <div class="card-desc">
+          Contrahuella, huella, Blondel, pendiente, ángulo.
+          Sección y planta generadas a escala real.
+        </div>
+      </td>
+      <td onclick="location.href='unidades.html'">
+        <div class="card-num">[003]</div>
+        <div class="card-title">Unidades</div>
+        <div class="card-desc">
+          Longitud, superficie y volumen.
+          Métrico, imperial y vara uruguaya.
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td onclick="location.href='secciones.html'">
+        <div class="card-num">[004]</div>
+        <div class="card-title">Secciones</div>
+        <div class="card-desc">
+          Baricentro, inercia, módulo resistente, radio de giro.
+          Rect., circular, doble T, L y T.
+        </div>
+      </td>
+      <td onclick="location.href='solar.html'">
+        <div class="card-num">[005]</div>
+        <div class="card-title">Solar</div>
+        <div class="card-desc">
+          Posición solar, sombras y protección.
+          Trayectoria, aleros, brise-soleil.
+        </div>
+      </td>
+      <td style="cursor:default; background:#f9f9f9;">
+        <div class="card-num" style="color:#cccccc;">[&middot;&middot;&middot;]</div>
+        <div class="card-title" style="color:#cccccc; text-decoration:none;">Próximamente</div>
+        <div class="card-desc" style="color:#aaaaaa;">
+          Nueva herramienta en desarrollo.
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <hr/>
+
+  <!-- NOTAS -->
+  <table style="width:100%; border-collapse:collapse; font-size:12px; color:#555555;">
+    <tr>
+      <td style="width:50%; vertical-align:top; padding-right:20px;">
+        <b>Sobre este sitio</b><br/>
+        Cada herramienta es una página independiente.
+        El código es HTML, CSS y JavaScript puro — sin frameworks, sin dependencias.
+        Funciona sin conexión una vez cargado.
+      </td>
+      <td style="width:50%; vertical-align:top;">
+        <b>Fuente</b><br/>
+        <a href="https://github.com">Ver en GitHub</a> &mdash;
+        reportar errores o sugerir herramientas por ahí.
+      </td>
+    </tr>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="site-footer">
+    ARQ'TOYBOX &middot; FADU UDELAR &middot;
+    <span id="year"></span>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
