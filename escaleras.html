@@ -668,360 +668,385 @@ function svgCota(x1,y1,x2,y2,label,lado){
 }
 
 // ═══════════════════════════════════════════
-//  DRAW: CORTE LONGITUDINAL
+//  DRAW: helpers SVG
 // ═══════════════════════════════════════════
-function drawCorte(sol, H, ancho) {
-  const { N, ch, h, proy } = sol;
-
-  // Escala visual: que la escalera quepa en ~420px de ancho y ~160px de alto
-  const maxW = 400, maxH = 160;
-  const sc   = Math.min(maxW / (proy + h*2), maxH / H, 1.8);
-
-  const PAD_L = 50, PAD_T = 30, PAD_B = 40, PAD_R = 60;
-  const svgW  = Math.ceil(proy * sc + PAD_L + PAD_R + 20);
-  const svgH  = Math.ceil(H * sc + PAD_T + PAD_B);
-
-  const baseY = PAD_T + H * sc; // Y del piso de partida
-  const startX = PAD_L;
-
-  let svg = `<svg id="svg-corte" viewBox="0 0 ${svgW} ${svgH}"
-    width="${svgW}" height="${svgH}"
-    xmlns="http://www.w3.org/2000/svg" fill="none">`;
-
-  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
-
-  // Título
-  svg += svgText(startX, PAD_T - 10, 'CORTE — escala aprox. 1:' + Math.round(100/sc), 'start', 9, '#555555', false);
-
-  // Piso de partida (línea base)
-  svg += svgLine(startX - 10, baseY, startX + proy*sc + 10, baseY, '#888888', 1, '4,3');
-
-  // Piso de llegada
-  svg += svgLine(startX - 10, PAD_T, startX + proy*sc + 10, PAD_T, '#888888', 1, '4,3');
-
-  // ESCALÓN A ESCALÓN
-  let path = `M ${startX} ${baseY}`;
-  for (let i = 0; i < N; i++) {
-    const x0 = startX + i * h * sc;
-    const y0 = baseY - i * ch * sc;
-    path += ` L ${(x0 + h*sc).toFixed(1)} ${y0.toFixed(1)}`;    // huella
-    path += ` L ${(x0 + h*sc).toFixed(1)} ${(y0 - ch*sc).toFixed(1)}`; // contrahuella
-  }
-
-  svg += `<path d="${path}" stroke="#000000" stroke-width="2" stroke-linejoin="miter"/>`;
-
-  // Diagonal de referencia (línea de pendiente)
-  svg += svgLine(startX, baseY, startX + proy*sc, PAD_T, '#cccccc', 0.8, '3,3');
-
-  // COTAS
-  // Cota altura total (derecha)
-  svg += svgCota(startX + proy*sc, baseY, startX + proy*sc, PAD_T,
-    `H = ${H} cm`, 'right');
-
-  // Cota huella (primer escalón, abajo)
-  svg += svgCota(startX, baseY, startX + h*sc, baseY,
-    `h = ${h.toFixed(1)} cm`, 'bottom');
-
-  // Cota contrahuella (último escalón, derecha con línea pequeña)
-  const lastX = startX + (N-1)*h*sc;
-  const lastY = baseY - (N-1)*ch*sc;
-  svg += svgCota(lastX + h*sc, lastY, lastX + h*sc, lastY - ch*sc,
-    `ch = ${ch.toFixed(1)}`, 'right');
-
-  // Cota proyección horizontal (arriba)
-  svg += svgCota(startX, baseY, startX + proy*sc, baseY,
-    `proy. = ${proy.toFixed(1)} cm`, 'top');
-
-  svg += '</svg>';
-
-  const wrap = document.getElementById('wrap-corte');
-  wrap.innerHTML = svg;
+// ═══════════════════════════════════════════
+//  SVG HELPERS
+// ═══════════════════════════════════════════
+function abrirSVG(id, w, h) {
+  return `<svg id="${id}" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"
+    xmlns="http://www.w3.org/2000/svg" fill="none">
+    <rect width="${w}" height="${h}" fill="#ffffff"/>`;
 }
 
-// ═══════════════════════════════════════════
-//  DRAW: PLANTA
-// ═══════════════════════════════════════════
-function drawPlanta(sol, H, ancho, tipo) {
-  const { N, ch, h, proy } = sol;
+// Dibuja N escalones subiendo desde (x0, y0).
+// dirX=+1: sube hacia la derecha. dirX=-1: sube hacia la izquierda.
+// Para dirX=-1, x0 debe ser el extremo DERECHO del tramo.
+// En cada paso: primero contrahuella (sube), luego huella (avanza en dirX).
+function escalones(x0, y0, N, hPx, chPx, dirX) {
+  let path = `M ${x0.toFixed(1)} ${y0.toFixed(1)}`;
+  for (let i = 0; i < N; i++) {
+    const xBase = x0 + i * hPx * dirX;
+    const yBase = y0 - i * chPx;
+    path += ` L ${xBase.toFixed(1)} ${(yBase - chPx).toFixed(1)}`;           // contrahuella (sube)
+    path += ` L ${(xBase + hPx * dirX).toFixed(1)} ${(yBase - chPx).toFixed(1)}`; // huella (avanza)
+  }
+  return `<path d="${path}" stroke="#000000" stroke-width="2" stroke-linejoin="miter"/>`;
+}
 
+// ── DISPATCHERS ──
+function drawCorte(sol, H, ancho) {
+  if (tipo === 'recta') drawCorteRecta(sol, H);
+  else if (tipo === 'L') drawCorteL(sol, H);
+  else if (tipo === 'U') drawCorteU(sol, H, ancho);
+}
+function drawPlanta(sol, H, ancho) {
   if (tipo === 'recta') drawPlantaRecta(sol, ancho);
   else if (tipo === 'L') drawPlantaL(sol, ancho);
   else if (tipo === 'U') drawPlantaU(sol, ancho);
 }
 
-// ── PLANTA RECTA ──────────────────────────
+// ═══════════════════════════════════════════
+//  CORTE: RECTA
+// ═══════════════════════════════════════════
+function drawCorteRecta(sol, H) {
+  const { N, ch, h, proy } = sol;
+  const sc = Math.min(400/proy, 160/H, 1.8);
+  const PL=50, PT=30, PB=42, PR=70;
+  const W = Math.ceil(proy*sc+PL+PR), Hpx=Math.ceil(H*sc+PT+PB);
+  const bY=PT+H*sc, sX=PL;
+  let s = abrirSVG('svg-corte', W, Hpx);
+  s += svgText(sX, PT-10, 'CORTE — 1:'+Math.round(100/sc), 'start', 9, '#555555', false);
+  s += svgLine(sX-10, bY, sX+proy*sc+10, bY, '#888888', 1, '4,3');
+  s += svgLine(sX-10, PT, sX+proy*sc+10, PT, '#888888', 1, '4,3');
+  s += escalones(sX, bY, N, h*sc, ch*sc, 1);
+  s += svgLine(sX, bY, sX+proy*sc, PT, '#dddddd', 0.8, '3,3');
+  s += svgCota(sX+proy*sc, bY, sX+proy*sc, PT, `H = ${H} cm`, 'right');
+  s += svgCota(sX, bY, sX+h*sc, bY, `h = ${h.toFixed(1)}`, 'bottom');
+  s += svgCota(sX, bY, sX+proy*sc, bY, `proy. ${proy.toFixed(0)} cm`, 'top');
+  s += svgCota(sX+h*sc, bY, sX+h*sc, bY-ch*sc, `ch=${ch.toFixed(1)}`, 'right');
+  s += '</svg>';
+  document.getElementById('wrap-corte').innerHTML = s;
+}
+
+// ═══════════════════════════════════════════
+//  CORTE: EN L
+//  T1 sube (izq→der). Descanso al nivel de llegada de T1.
+//  T2 arranca desde ese nivel y sigue subiendo (izq→der).
+//  El corte despliega los dos tramos en línea.
+// ═══════════════════════════════════════════
+function drawCorteL(sol, H) {
+  const { N, ch, h } = sol;
+  const N1=Math.ceil(N/2), N2=N-N1;
+  const p1=(N1-1)*h, p2=(N2-1)*h;
+  const H1=N1*ch;        // altura al descanso
+  const descW=80;         // profundidad descanso en corte (cm visual)
+  const totalW=p1+descW+p2;
+
+  const sc=Math.min(400/totalW, 160/H, 1.8);
+  const PL=55, PT=30, PB=42, PR=70;
+  const W=Math.ceil(totalW*sc+PL+PR), Hpx=Math.ceil(H*sc+PT+PB);
+  const bY=PT+H*sc, sX=PL;
+  const descY=bY-H1*sc;           // Y del piso del descanso
+  const descX=sX+p1*sc;           // X donde comienza el descanso
+  const t2x=sX+(p1+descW)*sc;    // X donde comienza T2
+
+  let s=abrirSVG('svg-corte', W, Hpx);
+  s+=svgText(sX, PT-10, 'CORTE — L — 1:'+Math.round(100/sc), 'start', 9, '#555555', false);
+
+  // Piso T1 (abajo)
+  s+=svgLine(sX-10, bY, descX+4, bY, '#888888', 1, '4,3');
+  // Piso T2 — mismo nivel que T1 (la L tiene base en el mismo piso)
+  s+=svgLine(t2x-4, bY, t2x+p2*sc+10, bY, '#888888', 1, '4,3');
+  // Nivel llegada T2 (arriba)
+  s+=svgLine(t2x-4, PT, t2x+p2*sc+10, PT, '#888888', 1, '4,3');
+
+  // T1: sube desde piso hasta descY
+  s+=escalones(sX, bY, N1, h*sc, ch*sc, 1);
+
+  // Descanso: losa
+  s+=svgRect(descX, descY-5, descW*sc, 5, '#e8e8e0', '#000000', 1.2);
+  s+=svgText(descX+descW*sc/2, descY-8, 'DESCANSO', 'middle', 7, '#888888', false);
+  s+=svgLine(descX, descY, descX+descW*sc, descY, '#888888', 0.5, '3,3');
+
+  // T2: arranca desde el nivel del descanso
+  s+=escalones(t2x, descY, N2, h*sc, ch*sc, 1);
+
+  // diagonal global
+  s+=svgLine(sX, bY, sX+totalW*sc, PT, '#dddddd', 0.8, '3,3');
+
+  // cotas
+  s+=svgCota(sX, bY, sX, descY, `H1 = ${H1.toFixed(0)} cm`, 'left');
+  s+=svgCota(t2x+p2*sc, bY, t2x+p2*sc, PT, `H = ${H} cm`, 'right');
+  s+=svgCota(sX, bY, descX, bY, `${p1.toFixed(0)} cm (${N1-1}h)`, 'bottom');
+  s+=svgCota(t2x, bY, t2x+p2*sc, bY, `${p2.toFixed(0)} cm (${N2-1}h)`, 'bottom');
+  s+=svgCota(descX, descY+20, descX+descW*sc, descY+20, `desc.`, 'bottom');
+  s+=svgCota(sX+h*sc, bY, sX+h*sc, bY-ch*sc, `ch=${ch.toFixed(1)}`, 'right');
+
+  s+='</svg>';
+  document.getElementById('wrap-corte').innerHTML=s;
+}
+
+// ═══════════════════════════════════════════
+//  CORTE: EN U
+//  Ambos tramos suben hacia el descanso desde el mismo piso.
+//  En el corte:
+//    T1 sube de izquierda a derecha.
+//    T2 sube de derecha a izquierda (espejo).
+//    El descanso está arriba en el centro.
+//
+//    tY ┌──────────────────────────────────┐
+//       │    T1 →         desc    ← T2    │
+//    bY └──────────       ────────────────┘
+// ═══════════════════════════════════════════
+function drawCorteU(sol, H, ancho) {
+  const { N, ch, h } = sol;
+  const N1=Math.ceil(N/2), N2=N-N1;
+  const p1=(N1-1)*h, p2=(N2-1)*h;
+  const descW=ancho;
+  const totalW=p1+descW+p2;
+
+  const sc=Math.min(400/totalW, 160/H, 1.8);
+  const PL=55, PT=30, PB=42, PR=70;
+  const W=Math.ceil(totalW*sc+PL+PR), Hpx=Math.ceil(H*sc+PT+PB);
+  const bY=PT+H*sc, tY=PT, sX=PL;
+
+  const descX=sX+p1*sc;          // X inicio descanso
+  const t2x=descX+descW*sc;      // X inicio tramo 2
+  const t2end=t2x+p2*sc;         // X fin tramo 2 (extremo derecho)
+
+  let s=abrirSVG('svg-corte', W, Hpx);
+  s+=svgText(sX, PT-10, 'CORTE — U — 1:'+Math.round(100/sc), 'start', 9, '#555555', false);
+
+  // Piso T1
+  s+=svgLine(sX-10, bY, descX+4, bY, '#888888', 1, '4,3');
+  // Piso T2
+  s+=svgLine(t2x-4, bY, t2end+10, bY, '#888888', 1, '4,3');
+  // Nivel descanso (arriba, cubre todo)
+  s+=svgLine(sX-4, tY, t2end+4, tY, '#888888', 1, '4,3');
+
+  // T1: sube de izq a der desde bY hasta tY
+  s+=escalones(sX, bY, N1, h*sc, ch*sc, 1);
+
+  // Descanso arriba
+  s+=svgRect(descX, tY-5, descW*sc, 5, '#e8e8e0', '#000000', 1.2);
+  s+=svgText(descX+descW*sc/2, tY-8, 'DESCANSO', 'middle', 7, '#888888', false);
+
+  // T2: sube de der a izq.
+  // Punto de partida = extremo DERECHO del tramo 2 (t2end), bY.
+  // dirX=-1: cada contrahuella sube, cada huella avanza hacia la izquierda.
+  s+=escalones(t2end, bY, N2, h*sc, ch*sc, -1);
+
+  // Etiquetas
+  s+=svgText(sX+p1*sc/2, bY+16, '↑ T1 sube', 'middle', 8, '#555555', false);
+  s+=svgText(t2x+p2*sc/2, bY+16, '↑ T2 sube', 'middle', 8, '#555555', false);
+
+  // Cotas
+  s+=svgCota(sX, bY, sX, tY, `H = ${H} cm`, 'left');
+  s+=svgCota(t2end, bY, t2end, tY, `H = ${H} cm`, 'right');
+  s+=svgCota(sX, bY, descX, bY, `${p1.toFixed(0)} cm (${N1-1}h)`, 'bottom');
+  s+=svgCota(t2x, bY, t2end, bY, `${p2.toFixed(0)} cm (${N2-1}h)`, 'bottom');
+  s+=svgCota(descX, tY, descX+descW*sc, tY, `desc. ${descW} cm`, 'top');
+  s+=svgCota(sX+h*sc, bY, sX+h*sc, bY-ch*sc, `ch=${ch.toFixed(1)}`, 'right');
+
+  s+='</svg>';
+  document.getElementById('wrap-corte').innerHTML=s;
+}
+// ═══════════════════════════════════════════
+//  PLANTA: RECTA
+// ═══════════════════════════════════════════
 function drawPlantaRecta(sol, ancho) {
   const { N, ch, h, proy } = sol;
+  const sc = Math.min(400/proy, 1.8);
 
-  const maxW = 420;
-  const sc   = Math.min(maxW / (proy + 20), 1.8);
+  const PL=50, PT=30, PB=50, PR=20;
+  const aPx = ancho*sc, pPx = proy*sc;
+  const W = Math.ceil(pPx + PL + PR + 10);
+  const Hpx = Math.ceil(aPx + PT + PB);
+  const ox=PL, oy=PT;
 
-  const PAD_L = 50, PAD_T = 30, PAD_B = 50, PAD_R = 20;
-  const anchoPx = ancho * sc;
-  const proyPx  = proy * sc;
-  const svgW    = Math.ceil(proyPx + PAD_L + PAD_R + 10);
-  const svgH    = Math.ceil(anchoPx + PAD_T + PAD_B);
+  let s = abrirSVG('svg-planta', W, Hpx);
+  s += svgText(ox, oy-10, 'PLANTA — recta', 'start', 9, '#555555', false);
 
-  const ox = PAD_L, oy = PAD_T;
-
-  let svg = `<svg id="svg-planta" viewBox="0 0 ${svgW} ${svgH}"
-    width="${svgW}" height="${svgH}"
-    xmlns="http://www.w3.org/2000/svg" fill="none">`;
-  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
-  svg += svgText(ox, oy - 10, 'PLANTA — escalera recta', 'start', 9, '#555555', false);
-
-  // Huellas (N-1 rectángulos, alternando)
-  for (let i = 0; i < N-1; i++) {
-    const x = ox + i * h * sc;
-    const fill = i % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
-    svg += svgRect(x, oy, h*sc, anchoPx, fill, '#666666', 0.8);
-    // Número de escalón
-    if (h*sc > 14) {
-      svg += svgText(x + h*sc/2, oy + anchoPx/2 + 4, String(i+1), 'middle', 8, '#888888', false);
-    }
+  // Huellas (N-1)
+  for (let i=0; i<N-1; i++) {
+    const x=ox+i*h*sc;
+    s += svgRect(x, oy, h*sc, aPx, i%2===0?'#e8e8ff':'#d8d8ee', '#666666', 0.8);
+    if (h*sc>14) s += svgText(x+h*sc/2, oy+aPx/2+4, String(i+1), 'middle', 8, '#888888', false);
   }
+  s += svgRect(ox, oy, pPx, aPx, 'none', '#000000', 1.5);
 
-  // Borde exterior
-  svg += svgRect(ox, oy, proyPx, anchoPx, 'none', '#000000', 1.5);
+  // Flecha sube
+  const ax=ox+pPx+8;
+  s += svgLine(ax, oy+aPx-4, ax, oy+4, '#000000', 1);
+  s += `<polygon points="${ax},${(oy+2).toFixed(1)} ${(ax-3).toFixed(1)},${(oy+9).toFixed(1)} ${(ax+3).toFixed(1)},${(oy+9).toFixed(1)}" fill="#000000"/>`;
+  s += svgText(ax+5, oy+aPx/2+4, 'sube', 'start', 8, '#555555', false);
 
-  // Flecha de dirección de subida
-  const arrowX = ox + proyPx + 6;
-  svg += svgLine(arrowX, oy + anchoPx, arrowX, oy + 4, '#000000', 1);
-  svg += `<polygon points="${arrowX},${(oy+2).toFixed(1)} ${(arrowX-4).toFixed(1)},${(oy+10).toFixed(1)} ${(arrowX+4).toFixed(1)},${(oy+10).toFixed(1)}" fill="#000000"/>`;
-  svg += svgText(arrowX + 6, oy + anchoPx/2 + 4, 'sube', 'start', 8, '#555555', false);
+  // Línea de corte
+  const cx=ox+(N/2)*h*sc;
+  s += svgLine(cx, oy-8, cx, oy+aPx+8, '#cc0000', 0.8, '5,3');
+  s += svgText(cx, oy-11, 'A', 'middle', 8, '#cc0000', true);
+  s += svgText(cx, oy+aPx+16, "A'", 'middle', 8, '#cc0000', true);
 
-  // Línea de corte (indica dónde va el plano de corte, a media altura)
-  const corteX = ox + (N/2) * h * sc;
-  svg += svgLine(corteX, oy - 8, corteX, oy + anchoPx + 8, '#cc0000', 0.8, '5,3');
-  svg += svgText(corteX, oy - 10, 'A', 'middle', 8, '#cc0000', true);
-  svg += svgText(corteX, oy + anchoPx + 16, "A'", 'middle', 8, '#cc0000', true);
+  // Cotas
+  s += svgCota(ox, oy+aPx, ox+pPx, oy+aPx, `${proy.toFixed(1)} cm`, 'bottom');
+  s += svgCota(ox, oy, ox, oy+aPx, `${ancho} cm`, 'left');
 
-  // COTAS
-  // Proyección horizontal (abajo)
-  svg += svgCota(ox, oy + anchoPx, ox + proyPx, oy + anchoPx,
-    `${proy.toFixed(1)} cm`, 'bottom');
-  // Ancho (izquierda)
-  svg += svgCota(ox, oy, ox, oy + anchoPx,
-    `${ancho} cm`, 'left');
-
-  svg += '</svg>';
-  document.getElementById('wrap-planta').innerHTML = svg;
+  s += '</svg>';
+  document.getElementById('wrap-planta').innerHTML = s;
 }
 
-// ── PLANTA EN L ───────────────────────────
+// ═══════════════════════════════════════════
+//  PLANTA: EN L
+//  T1 va de izquierda a derecha (huellas verticales en planta).
+//  Descanso cuadrado en la esquina.
+//  T2 va de arriba a abajo desde el descanso (huellas horizontales en planta).
+// ═══════════════════════════════════════════
 function drawPlantaL(sol, ancho) {
   const { N, ch, h } = sol;
+  const N1=Math.ceil(N/2), N2=N-N1;
+  const p1=(N1-1)*h, p2=(N2-1)*h;
+  const desc=ancho; // descanso cuadrado
 
-  // Dividir en 2 tramos
-  const N1 = Math.ceil(N / 2);
-  const N2 = N - N1;
-  const p1 = (N1 - 1) * h; // proyección tramo 1
-  const p2 = (N2 - 1) * h; // proyección tramo 2
-  const desc = ancho;       // descanso cuadrado = ancho escalera
+  const sc = Math.min(380/(p1+desc), 220/(desc+p2), 1.8);
+  const aPx=ancho*sc, p1px=p1*sc, p2px=p2*sc, dPx=desc*sc;
 
-  const maxW = 400;
-  const sc   = Math.min(maxW / (p1 + desc + 20), 1.6);
+  const PL=50, PT=30, PB=50, PR=50;
+  const W = Math.ceil(p1px+dPx+PL+PR);
+  const Hpx = Math.ceil(aPx+p2px+PT+PB);
+  const ox=PL, oy=PT;
 
-  const anchoPx = ancho * sc;
-  const p1px    = p1 * sc;
-  const p2px    = p2 * sc;
-  const descPx  = desc * sc;
+  let s = abrirSVG('svg-planta', W, Hpx);
+  s += svgText(ox, oy-10, 'PLANTA — en L', 'start', 9, '#555555', false);
 
-  const PAD_L = 50, PAD_T = 30, PAD_B = 50, PAD_R = 50;
-  const svgW  = Math.ceil(p1px + descPx + PAD_L + PAD_R + 10);
-  const svgH  = Math.ceil(anchoPx + p2px + descPx + PAD_T + PAD_B);
-
-  const ox = PAD_L, oy = PAD_T;
-
-  let svg = `<svg id="svg-planta" viewBox="0 0 ${svgW} ${svgH}"
-    width="${svgW}" height="${svgH}"
-    xmlns="http://www.w3.org/2000/svg" fill="none">`;
-  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
-  svg += svgText(ox, oy - 10, 'PLANTA — escalera en L', 'start', 9, '#555555', false);
-
-  // TRAMO 1: horizontal (izquierda a derecha)
-  for (let i = 0; i < N1-1; i++) {
-    const x = ox + i * h * sc;
-    const fill = i % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
-    svg += svgRect(x, oy, h*sc, anchoPx, fill, '#666666', 0.8);
-    if (h*sc > 12) svg += svgText(x+h*sc/2, oy+anchoPx/2+4, String(i+1), 'middle', 7, '#888888', false);
+  // TRAMO 1: huellas verticales (columnas), va de izq a der
+  // Huellas de ancho h*sc y alto aPx, una al lado de la otra
+  for (let i=0; i<N1-1; i++) {
+    const x=ox+i*h*sc;
+    s += svgRect(x, oy, h*sc, aPx, i%2===0?'#e8e8ff':'#d8d8ee', '#666666', 0.8);
+    if (h*sc>12) s += svgText(x+h*sc/2, oy+aPx/2+4, String(i+1), 'middle', 7, '#888888', false);
   }
-  svg += svgRect(ox, oy, p1px, anchoPx, 'none', '#000000', 1.5);
+  s += svgRect(ox, oy, p1px, aPx, 'none', '#000000', 1.5);
+  // Flecha T1 (horizontal, apunta al descanso)
+  const arr1y=oy+aPx/2;
+  s += svgLine(ox+4, arr1y, ox+p1px-4, arr1y, '#000000', 0.8);
+  s += `<polygon points="${(ox+p1px-2).toFixed(1)},${arr1y.toFixed(1)} ${(ox+p1px-8).toFixed(1)},${(arr1y-3).toFixed(1)} ${(ox+p1px-8).toFixed(1)},${(arr1y+3).toFixed(1)}" fill="#000000"/>`;
 
-  // DESCANSO
-  const dox = ox + p1px, doy = oy;
-  svg += svgRect(dox, doy, descPx, descPx, '#f0f0e0', '#000000', 1.5);
-  svg += svgText(dox + descPx/2, doy + descPx/2 + 4, 'DESCANSO', 'middle', 8, '#888888', false);
-  svg += svgText(dox + descPx/2, doy + descPx/2 + 14, `${desc}×${desc} cm`, 'middle', 7, '#aaaaaa', false);
+  // DESCANSO: cuadrado en la esquina superior derecha
+  const dox=ox+p1px, doy=oy;
+  s += svgRect(dox, doy, dPx, dPx, '#f0f0e0', '#000000', 1.5);
+  s += svgText(dox+dPx/2, doy+dPx/2+4, 'DESCANSO', 'middle', 8, '#888888', false);
+  s += svgText(dox+dPx/2, doy+dPx/2+14, `${desc}×${desc} cm`, 'middle', 7, '#aaaaaa', false);
 
-  // TRAMO 2: vertical (hacia abajo desde el descanso)
-  const t2ox = dox + descPx - anchoPx;
-  const t2oy = doy + descPx;
-  for (let i = 0; i < N2-1; i++) {
-    const y = t2oy + i * h * sc;
-    const fill = (N1-1+i) % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
-    svg += svgRect(t2ox, y, anchoPx, h*sc, fill, '#666666', 0.8);
-    if (h*sc > 12) svg += svgText(t2ox+anchoPx/2, y+h*sc/2+4, String(N1+i), 'middle', 7, '#888888', false);
+  // TRAMO 2: huellas horizontales (filas), va hacia abajo desde el descanso
+  // Empieza en la esquina inferior derecha del descanso
+  const t2ox=dox, t2oy=doy+dPx;
+  // Ancho del tramo 2 = mismo ancho que el descanso = aPx
+  // Huellas de alto h*sc y ancho aPx, una debajo de la otra
+  for (let i=0; i<N2-1; i++) {
+    const y=t2oy+i*h*sc;
+    s += svgRect(t2ox, y, aPx, h*sc, (N1-1+i)%2===0?'#e8e8ff':'#d8d8ee', '#666666', 0.8);
+    if (h*sc>12) s += svgText(t2ox+aPx/2, y+h*sc/2+4, String(N1+i), 'middle', 7, '#888888', false);
   }
-  svg += svgRect(t2ox, t2oy, anchoPx, p2px, 'none', '#000000', 1.5);
-
-  // Flechas
-  svg += svgLine(ox - 6, oy + anchoPx/2, ox + p1px - 4, oy + anchoPx/2, '#000000', 0.8);
-  svg += `<polygon points="${(ox+p1px-2).toFixed(1)},${(oy+anchoPx/2).toFixed(1)} ${(ox+p1px-8).toFixed(1)},${(oy+anchoPx/2-3).toFixed(1)} ${(ox+p1px-8).toFixed(1)},${(oy+anchoPx/2+3).toFixed(1)}" fill="#000000"/>`;
+  s += svgRect(t2ox, t2oy, aPx, p2px, 'none', '#000000', 1.5);
+  // Flecha T2 (vertical, apunta hacia abajo)
+  const arr2x=t2ox+aPx/2;
+  s += svgLine(arr2x, t2oy+4, arr2x, t2oy+p2px-4, '#000000', 0.8);
+  s += `<polygon points="${arr2x.toFixed(1)},${(t2oy+p2px-2).toFixed(1)} ${(arr2x-3).toFixed(1)},${(t2oy+p2px-8).toFixed(1)} ${(arr2x+3).toFixed(1)},${(t2oy+p2px-8).toFixed(1)}" fill="#000000"/>`;
 
   // COTAS
-  // Tramo 1
-  svg += svgCota(ox, oy+anchoPx, ox+p1px, oy+anchoPx, `${p1.toFixed(0)} cm (${N1-1} huellas)`, 'bottom');
-  // Ancho
-  svg += svgCota(ox, oy, ox, oy+anchoPx, `${ancho} cm`, 'left');
-  // Descanso
-  svg += svgCota(dox, oy-14, dox+descPx, oy-14, `desc. ${desc} cm`, 'top');
-  // Tramo 2
-  svg += svgCota(t2ox+anchoPx, t2oy, t2ox+anchoPx, t2oy+p2px, `${p2.toFixed(0)} cm (${N2-1} huellas)`, 'right');
+  s += svgCota(ox, oy, ox, oy+aPx, `${ancho} cm`, 'left');
+  s += svgCota(ox, oy+aPx, ox+p1px, oy+aPx, `${p1.toFixed(0)} cm (${N1-1} huellas)`, 'bottom');
+  s += svgCota(dox, oy-14, dox+dPx, oy-14, `desc. ${desc}×${desc} cm`, 'top');
+  s += svgCota(t2ox+aPx, t2oy, t2ox+aPx, t2oy+p2px, `${p2.toFixed(0)} cm (${N2-1} huellas)`, 'right');
 
-  svg += '</svg>';
-  document.getElementById('wrap-planta').innerHTML = svg;
+  s += '</svg>';
+  document.getElementById('wrap-planta').innerHTML = s;
 }
 
-// ── PLANTA EN U ───────────────────────────
-// Geometría: dos tramos paralelos que suben en sentidos opuestos,
-// unidos por un descanso en el extremo superior. Ojo en el centro.
+// ═══════════════════════════════════════════
+//  PLANTA: EN U
+//  Dos tramos paralelos verticales (huellas horizontales), ambos suben.
+//  Descanso horizontal arriba que los conecta.
+//  Ojo en el centro entre los dos tramos.
 //
-//   T1 (sube ↑)  |  OJO  |  T2 (sube ↑)
-//   ┌────────────┬────────┬────────────┐
-//   │ N/2 esc.   │        │ N/2 esc.   │  ← DESCANSO (une los tramos)
-//   │            │  void  │            │
-//   │  esc 1→N/2 │        │ esc N→N/2+1│
-//   └────────────┴────────┴────────────┘
-//   PISO BAJO                  PISO BAJO
-//
-// T1 sube de abajo hacia el descanso (huellas van de abajo a arriba = Y decrece)
-// T2 baja desde el descanso (huellas van de arriba a abajo = Y crece), sentido inverso
-// Ojo: espacio vacío entre los dos tramos (ancho paramétrico, mínimo = ancho tramo)
-
+//  ┌────────────────────────────┐
+//  │        DESCANSO            │  ← arriba
+//  ├──────────┬─────┬───────────┤
+//  │  T1  ↑   │ OJO │   T2  ↑  │  ← tramos suben hacia el descanso
+//  └──────────┴─────┴───────────┘
+//               piso de partida
+// ═══════════════════════════════════════════
 function drawPlantaU(sol, ancho) {
   const { N, ch, h } = sol;
+  const N1=Math.ceil(N/2), N2=N-N1;
+  const p1=(N1-1)*h, p2=(N2-1)*h;
+  const tramos=Math.max(p1,p2); // alto total de los tramos (tomamos el mayor)
+  const ojo=ancho;               // ancho del ojo = ancho escalera
+  const descAncho=2*ancho+ojo;  // ancho total del descanso
+  const descAlto=ancho;          // profundidad del descanso
 
-  // Dos tramos iguales
-  const N1 = Math.ceil(N / 2);   // tramo 1
-  const N2 = N - N1;              // tramo 2
-  const p1 = (N1 - 1) * h;       // proyección tramo 1 (cm)
-  const p2 = (N2 - 1) * h;       // proyección tramo 2 (cm)
-  const tramos = Math.max(p1, p2); // alto total de los tramos
+  const sc=Math.min(380/descAncho, 220/(tramos+descAlto), 1.8);
+  const aPx=ancho*sc, ojoPx=ojo*sc, dAPx=descAncho*sc, dHPx=descAlto*sc;
+  const p1px=p1*sc, p2px=p2*sc, tramsPx=tramos*sc;
 
-  // Ojo: mínimo = ancho del tramo, pero puede ser mayor
-  const ojo = ancho;              // ancho del ojo (cm) = ancho escalera por defecto
-  const descAncho = 2*ancho + ojo; // ancho total del descanso (cubre ambos tramos + ojo)
-  const descAlto  = ancho;        // profundidad del descanso = ancho escalera
+  const PL=50, PT=30, PB=50, PR=60;
+  const W=Math.ceil(dAPx+PL+PR);
+  const Hpx=Math.ceil(tramsPx+dHPx+PT+PB);
+  const ox=PL, oy=PT;
 
-  // Escala visual
-  const maxW = 400;
-  const totalW = descAncho; // ancho total de la figura
-  const totalH = tramos + descAlto;
-  const sc = Math.min(maxW / totalW, 200 / totalH, 2.0);
+  // Posiciones clave
+  const t1x=ox;                  // X izq. tramo 1
+  const t2x=ox+aPx+ojoPx;       // X izq. tramo 2
+  const descY=oy;                // Y superior del descanso
+  const tramY=oy+dHPx;          // Y donde arrancan los tramos (inmediatamente bajo el descanso)
 
-  const anchoPx  = ancho * sc;
-  const ojoPx    = ojo   * sc;
-  const p1px     = p1    * sc;
-  const p2px     = p2    * sc;
-  const descAPx  = descAncho * sc;
-  const descHPx  = descAlto  * sc;
-  const trPx     = tramos    * sc;
+  let s = abrirSVG('svg-planta', W, Hpx);
+  s += svgText(ox, oy-10, 'PLANTA — en U', 'start', 9, '#555555', false);
 
-  const PAD_L = 50, PAD_T = 30, PAD_B = 50, PAD_R = 60;
-  const svgW  = Math.ceil(descAPx + PAD_L + PAD_R);
-  const svgH  = Math.ceil(trPx + descHPx + PAD_T + PAD_B);
+  // DESCANSO (arriba, ancho completo)
+  s += svgRect(ox, descY, dAPx, dHPx, '#f0f0e0', '#000000', 1.5);
+  s += svgText(ox+dAPx/2, descY+dHPx/2+4, 'DESCANSO', 'middle', 8, '#888888', false);
+  s += svgText(ox+dAPx/2, descY+dHPx/2+14, `${descAncho.toFixed(0)}×${descAlto} cm`, 'middle', 7, '#aaaaaa', false);
 
-  // Origen: esquina superior izquierda del conjunto
-  const ox = PAD_L, oy = PAD_T;
+  // OJO (vacío entre los tramos, debajo del descanso)
+  s += svgRect(ox+aPx, tramY, ojoPx, tramsPx, '#f8f8f8', '#cccccc', 0.8);
+  s += svgText(ox+aPx+ojoPx/2, tramY+tramsPx/2+4, 'OJO', 'middle', 9, '#cccccc', false);
+  s += svgText(ox+aPx+ojoPx/2, tramY+tramsPx/2+14, `${ojo} cm`, 'middle', 8, '#cccccc', false);
 
-  // Coordenadas clave
-  const t1_x  = ox;                        // X izq. tramo 1
-  const t2_x  = ox + anchoPx + ojoPx;      // X izq. tramo 2
-  const desc_y = oy;                        // Y superior del descanso
-  const tram_y = oy + descHPx;             // Y donde arrancan los tramos (debajo del descanso)
-
-  let svg = `<svg id="svg-planta" viewBox="0 0 ${svgW} ${svgH}"
-    width="${svgW}" height="${svgH}"
-    xmlns="http://www.w3.org/2000/svg" fill="none">`;
-  svg += `<rect width="${svgW}" height="${svgH}" fill="#ffffff"/>`;
-  svg += svgText(ox, oy - 10, 'PLANTA — escalera en U', 'start', 9, '#555555', false);
-
-  // ── DESCANSO (arriba, ancho completo) ──
-  svg += svgRect(ox, desc_y, descAPx, descHPx, '#f0f0e0', '#000000', 1.5);
-  svg += svgText(ox + descAPx/2, desc_y + descHPx/2 + 4,
-    'DESCANSO', 'middle', 8, '#888888', false);
-  svg += svgText(ox + descAPx/2, desc_y + descHPx/2 + 14,
-    `${descAncho.toFixed(0)} × ${descAlto} cm`, 'middle', 7, '#aaaaaa', false);
-
-  // ── OJO (centro, vacío) ──
-  // Ya queda vacío porque no dibujamos nada ahí — solo marcamos el contorno
-  svg += svgRect(ox + anchoPx, tram_y, ojoPx, trPx, '#f8f8f8', '#cccccc', 0.8, '4,3');
-  svg += svgText(ox + anchoPx + ojoPx/2, tram_y + trPx/2 + 4,
-    'OJO', 'middle', 9, '#cccccc', false);
-  svg += svgText(ox + anchoPx + ojoPx/2, tram_y + trPx/2 + 14,
-    `${ojo} cm`, 'middle', 8, '#cccccc', false);
-
-  // ── TRAMO 1 (izquierda, huellas van de abajo hacia arriba) ──
-  // Escalón 1 está abajo, N1 está arriba pegado al descanso
-  for (let i = 0; i < N1 - 1; i++) {
-    // i=0 es el primer escalón (más abajo), i=N1-2 es el último (más arriba)
-    const y    = tram_y + p1px - (i + 1) * h * sc;
-    const fill = i % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
-    svg += svgRect(t1_x, y, anchoPx, h*sc, fill, '#666666', 0.8);
-    if (h*sc > 12)
-      svg += svgText(t1_x + anchoPx/2, y + h*sc/2 + 4,
-        String(i + 1), 'middle', 7, '#888888', false);
+  // TRAMO 1 (izquierda): huellas horizontales, escalón 1 abajo, N1 arriba
+  // i=0 → más abajo (lejos del descanso), i=N1-2 → más arriba (pegado al descanso)
+  for (let i=0; i<N1-1; i++) {
+    const y=tramY + p1px - (i+1)*h*sc; // empieza desde abajo
+    s += svgRect(t1x, y, aPx, h*sc, i%2===0?'#e8e8ff':'#d8d8ee', '#666666', 0.8);
+    if (h*sc>12) s += svgText(t1x+aPx/2, y+h*sc/2+4, String(i+1), 'middle', 7, '#888888', false);
   }
-  svg += svgRect(t1_x, tram_y, anchoPx, p1px, 'none', '#000000', 1.5);
+  s += svgRect(t1x, tramY, aPx, p1px, 'none', '#000000', 1.5);
+  // Flecha T1 (sube hacia el descanso = hacia arriba)
+  s += svgLine(t1x+aPx/2, tramY+p1px-4, t1x+aPx/2, tramY+4, '#000000', 0.8);
+  s += `<polygon points="${(t1x+aPx/2).toFixed(1)},${(tramY+2).toFixed(1)} ${(t1x+aPx/2-3).toFixed(1)},${(tramY+9).toFixed(1)} ${(t1x+aPx/2+3).toFixed(1)},${(tramY+9).toFixed(1)}" fill="#000000"/>`;
 
-  // ── TRAMO 2 (derecha, huellas van de abajo hacia arriba también) ──
-  // Misma orientación que T1 — ambos suben hacia el descanso
-  for (let i = 0; i < N2 - 1; i++) {
-    const y    = tram_y + p2px - (i + 1) * h * sc;
-    const fill = (N1 - 1 + i) % 2 === 0 ? '#e8e8ff' : '#d8d8ee';
-    svg += svgRect(t2_x, y, anchoPx, h*sc, fill, '#666666', 0.8);
-    if (h*sc > 12)
-      svg += svgText(t2_x + anchoPx/2, y + h*sc/2 + 4,
-        String(N1 + i), 'middle', 7, '#888888', false);
+  // TRAMO 2 (derecha): igual, huellas horizontales, sube hacia el descanso
+  for (let i=0; i<N2-1; i++) {
+    const y=tramY + p2px - (i+1)*h*sc;
+    s += svgRect(t2x, y, aPx, h*sc, (N1-1+i)%2===0?'#e8e8ff':'#d8d8ee', '#666666', 0.8);
+    if (h*sc>12) s += svgText(t2x+aPx/2, y+h*sc/2+4, String(N1+i), 'middle', 7, '#888888', false);
   }
-  svg += svgRect(t2_x, tram_y, anchoPx, p2px, 'none', '#000000', 1.5);
+  s += svgRect(t2x, tramY, aPx, p2px, 'none', '#000000', 1.5);
+  // Flecha T2 (sube hacia el descanso)
+  s += svgLine(t2x+aPx/2, tramY+p2px-4, t2x+aPx/2, tramY+4, '#000000', 0.8);
+  s += `<polygon points="${(t2x+aPx/2).toFixed(1)},${(tramY+2).toFixed(1)} ${(t2x+aPx/2-3).toFixed(1)},${(tramY+9).toFixed(1)} ${(t2x+aPx/2+3).toFixed(1)},${(tramY+9).toFixed(1)}" fill="#000000"/>`;
 
-  // ── FLECHAS DE SENTIDO DE SUBIDA ──
-  // T1: flecha apunta hacia arriba (hacia el descanso)
-  const arr1x = t1_x + anchoPx/2;
-  svg += svgLine(arr1x, tram_y + p1px - 6, arr1x, tram_y + 4, '#000000', 0.8);
-  svg += `<polygon points="${arr1x},${(tram_y+2).toFixed(1)} ${(arr1x-3).toFixed(1)},${(tram_y+8).toFixed(1)} ${(arr1x+3).toFixed(1)},${(tram_y+8).toFixed(1)}" fill="#000000"/>`;
-  svg += svgText(t1_x - 14, tram_y + p1px/2 + 4, '↑', 'middle', 10, '#555555', false);
+  // COTAS
+  s += svgCota(ox, descY, ox+dAPx, descY, `descanso ${descAncho.toFixed(0)} cm`, 'top');
+  s += svgCota(ox+dAPx, descY, ox+dAPx, tramY, `${descAlto} cm`, 'right');
+  s += svgCota(t1x, tramY+p1px, t1x+aPx, tramY+p1px, `${ancho} cm`, 'bottom');
+  s += svgCota(t1x+aPx, tramY+Math.max(p1px,p2px), t2x, tramY+Math.max(p1px,p2px), `ojo ${ojo} cm`, 'bottom');
+  s += svgCota(t2x, tramY+p2px, t2x+aPx, tramY+p2px, `${ancho} cm`, 'bottom');
+  s += svgCota(t1x, tramY, t1x, tramY+p1px, `${p1.toFixed(0)} cm (${N1-1}h)`, 'left');
 
-  // T2: flecha apunta hacia arriba también
-  const arr2x = t2_x + anchoPx/2;
-  svg += svgLine(arr2x, tram_y + p2px - 6, arr2x, tram_y + 4, '#000000', 0.8);
-  svg += `<polygon points="${arr2x},${(tram_y+2).toFixed(1)} ${(arr2x-3).toFixed(1)},${(tram_y+8).toFixed(1)} ${(arr2x+3).toFixed(1)},${(tram_y+8).toFixed(1)}" fill="#000000"/>`;
-  svg += svgText(t2_x + anchoPx + 6, tram_y + p2px/2 + 4, '↑', 'start', 10, '#555555', false);
-
-  // ── COTAS ──
-  // Ancho tramo (izquierda)
-  svg += svgCota(t1_x, tram_y, t1_x, tram_y + p1px,
-    `${p1.toFixed(0)} cm (${N1-1} huellas)`, 'left');
-  // Ancho escalera T1 (abajo)
-  svg += svgCota(t1_x, tram_y + p1px, t1_x + anchoPx, tram_y + p1px,
-    `${ancho} cm`, 'bottom');
-  // Ojo (abajo)
-  svg += svgCota(t1_x + anchoPx, tram_y + p1px, t2_x, tram_y + p1px,
-    `ojo ${ojo} cm`, 'bottom');
-  // Ancho escalera T2 (abajo)
-  svg += svgCota(t2_x, tram_y + p2px, t2_x + anchoPx, tram_y + p2px,
-    `${ancho} cm`, 'bottom');
-  // Descanso ancho total (arriba)
-  svg += svgCota(ox, desc_y, ox + descAPx, desc_y,
-    `descanso ${descAncho.toFixed(0)} cm`, 'top');
-  // Profundidad descanso (derecha)
-  svg += svgCota(ox + descAPx, desc_y, ox + descAPx, tram_y,
-    `${descAlto} cm`, 'right');
-
-  svg += '</svg>';
-  document.getElementById('wrap-planta').innerHTML = svg;
+  s += '</svg>';
+  document.getElementById('wrap-planta').innerHTML = s;
 }
 
 // ═══════════════════════════════════════════
